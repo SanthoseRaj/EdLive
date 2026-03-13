@@ -31,7 +31,7 @@ class DashboardCountsProvider with ChangeNotifier {
       }
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/counts?studentId=$studentId";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/counts?studentId=$studentId";
 
       final response = await http.get(
         Uri.parse(url),

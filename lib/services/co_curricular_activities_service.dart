@@ -36,7 +36,7 @@ class CoCurricularService {
     }
 
     final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/co-curricular/activities?categoryId=$categoryId');
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/activities?categoryId=$categoryId');
 
     final response = await http.get(
       url,

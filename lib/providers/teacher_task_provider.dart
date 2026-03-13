@@ -11,7 +11,7 @@ import '../models/teacher_todo_model.dart';
 
 class TeacherTaskProvider with ChangeNotifier {
   List<Todo> _tasks = [];
-  final String _baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/todos';
+  final String _baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/todos';
   String? _authToken;
 
   void setAuthToken(String? token) {

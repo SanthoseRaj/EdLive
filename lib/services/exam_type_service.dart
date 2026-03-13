@@ -5,7 +5,7 @@ import '../models/exam_type_model.dart';
 
 class ExamTypeService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/types";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/types";
 
   Future<List<ExamType>> fetchExamTypes() async {
     final prefs = await SharedPreferences.getInstance();

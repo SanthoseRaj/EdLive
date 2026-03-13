@@ -14,7 +14,7 @@ class StudentService {
     }
 
     final response = await http.get(
-      Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/staff/staff/students/list'),
+      Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/students/list'),
       headers: {
         'accept': '*/*',
         'Authorization': 'Bearer $token',
@@ -31,7 +31,7 @@ class StudentService {
 }
 
 class AttendanceService {
-  final String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api';
+  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api';
 
   Future<void> toggleAttendance({
     required int studentId,

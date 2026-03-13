@@ -63,7 +63,7 @@ class _AnnounceMeetingPageState extends State<AnnounceMeetingPage> {
       final token = prefs.getString('auth_token') ?? '';
 
       final url = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/pta/announce",
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/pta/announce",
       );
 
       // Determine selected channels
@@ -456,7 +456,7 @@ class _AnnounceMeetingPageState extends State<AnnounceMeetingPage> {
       final token = prefs.getString('auth_token') ?? '';
 
       final url = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/pta/meetings",
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/pta/meetings",
       );
 
       final body = jsonEncode({

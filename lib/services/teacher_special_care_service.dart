@@ -5,7 +5,7 @@ import '../models/teacher_special_care_model.dart';
 
 class SpecialCareService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
   Future<List<SpecialCareCategory>> fetchCategories() async {
     final prefs = await SharedPreferences.getInstance();

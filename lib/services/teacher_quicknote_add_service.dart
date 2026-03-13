@@ -23,7 +23,7 @@ class TokenStorage {
 
 class QuickNoteService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/quicknotes";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes";
 
   /// Create a quick note
   Future<Map<String, dynamic>> createQuickNote({
@@ -67,7 +67,7 @@ class QuickNoteService {
     if (token == null) throw Exception("Auth token not found");
 
     final url = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/quicknotes/classes/$classId/students");
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes/classes/$classId/students");
 
     final response = await http.get(
       url,

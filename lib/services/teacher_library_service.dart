@@ -5,7 +5,7 @@ import '../models/teacher_library_book.dart';
 
 class LibraryService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library/books";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/books";
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();

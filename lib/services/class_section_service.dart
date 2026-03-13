@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/class_section.dart';
 
 class ClassService {
-  final String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<List<ClassSection>> fetchClassSections() async {
     final url = Uri.parse('$baseUrl/api/master/classes');

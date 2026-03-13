@@ -5,7 +5,7 @@ import '../models/exam_result_model.dart';
 
 class ExamResultService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
 
   Future<bool> saveExamResult(ExamResult result) async {
     final prefs = await SharedPreferences.getInstance();

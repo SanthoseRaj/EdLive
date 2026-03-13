@@ -32,7 +32,7 @@ class _SelectChildPageState extends State<SelectChildPage> {
     final token = prefs.getString('auth_token'); // ⚠️ Ensure token is saved at login
 
     final response = await http.get(
-      Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/student/parents/children'),
+      Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/parents/children'),
       headers: {
         'accept': 'application/json',
         'Authorization': 'Bearer $token',
@@ -48,7 +48,7 @@ children = data.map<Map<String, dynamic>>((child) {
     'user_id': child['user_id'],
     'name': child['full_name'],
     'image': child['profile_img'] != null
-        ? 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000${child['profile_img']}'
+        ? 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443${child['profile_img']}'
         : '',
     'class': child['class_name'] ?? '',  // 👈 show class name instead of student_id
     'class_id': child['class_id'],

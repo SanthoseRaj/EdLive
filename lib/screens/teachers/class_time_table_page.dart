@@ -55,7 +55,7 @@ final token = prefs.getString('auth_token') ?? '';
 final userData = prefs.getString('user_data');
 final user = jsonDecode(userData!);
 
-    final url = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/staff/staff/timetable/2024-2025';
+    final url = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/timetable/2024-2025';
   final response = await http.get(
   Uri.parse(url),
   headers: {

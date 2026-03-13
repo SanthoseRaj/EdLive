@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/teacher_model.dart';
 
 class TeacherService {
-  final String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api';
+  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api';
 
   Future<List<Teacher>> fetchTeachers(String studentId) async {
     final prefs = await SharedPreferences.getInstance();

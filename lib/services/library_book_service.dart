@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LibraryBookService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library";
 
   Future<List<dynamic>> getAllBooks() async {
     final prefs = await SharedPreferences.getInstance();

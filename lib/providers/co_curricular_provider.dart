@@ -23,7 +23,7 @@ class CoCurricularProvider extends ChangeNotifier {
       }
 
       final uri = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/co-curricular/stats"
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/stats"
         "${classId != null ? "?classId=$classId" : ""}"
         "${academicYear != null ? "&academicYear=$academicYear" : ""}",
       );

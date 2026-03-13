@@ -1,6 +1,6 @@
 class AppConfig {
   // Base API URL for the whole app
-  static const String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api';
+  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api';
 
   // SharedPreferences key for token
   static const String tokenKey = 'token';

@@ -5,7 +5,7 @@ import '../models/teacher_exam_model.dart';
 class TeacherExamService {
   static Future<List<TeacherExam>> fetchExamsByClassId(String classId) async {
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/teacher/$classId',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/teacher/$classId',
     );
 
     final response = await http.get(url);

@@ -5,7 +5,7 @@ import 'package:mime/mime.dart';
 import '../models/teacher_todo_model.dart';
 
 class TodoService {
-  final String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/todos';
+  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/todos';
 
   // PUT /api/todos/{id} with multipart/form-data
   Future<void> updateTodo(String id, {

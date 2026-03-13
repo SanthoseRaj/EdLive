@@ -8,7 +8,7 @@ import 'package:school_app/screens/students/student_notifiction_page.dart';
 
 // ---------------- SERVICE ----------------
 class StudentService {
-  static const baseUrl = "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api";
+  static const baseUrl = "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
   static Future<String?> getProfileImage(int studentId) async {
     try {

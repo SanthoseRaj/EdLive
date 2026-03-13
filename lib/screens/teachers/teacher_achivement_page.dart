@@ -57,7 +57,7 @@ class Achievement {
 String getFullImageUrl(String url) {
   if (url.isEmpty) return "";
   if (url.startsWith("http")) return url;
-  return "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000$url";
+  return "https://schoolmanagement.canadacentral.cloudapp.azure.com:443$url";
 }
 
 Widget buildAchievementImage(String url, {double height = 180}) {
@@ -121,7 +121,7 @@ class _TeacherAchievementPageState extends State<TeacherAchievementPage> {
     if (token.isEmpty) throw Exception("⚠️ Missing token");
 
     final response = await http.get(
-      Uri.parse("http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/achievements/visible"),
+      Uri.parse("https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/achievements/visible"),
       headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
@@ -150,7 +150,7 @@ class _TeacherAchievementPageState extends State<TeacherAchievementPage> {
       if (token.isEmpty) return;
 
       final response = await http.get(
-        Uri.parse("http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/achievements/visible"),
+        Uri.parse("https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/achievements/visible"),
         headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
       );
 
@@ -199,7 +199,7 @@ class _TeacherAchievementPageState extends State<TeacherAchievementPage> {
       if (token == null) return;
 
       final response = await http.post(
-        Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed'),
+        Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed'),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',

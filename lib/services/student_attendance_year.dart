@@ -14,7 +14,7 @@ class StudentYearlyAttendanceService {
     return null;
   }
 
-  final String url = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/studentattendance/yearly/$studentId';
+  final String url = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/studentattendance/yearly/$studentId';
 
   print('URL: $url');
   print('Token: $token');

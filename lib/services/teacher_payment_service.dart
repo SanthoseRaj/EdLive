@@ -7,7 +7,7 @@ import '../models/teacher_payment_model.dart';
 
 class PaymentService {
   static const String _baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   static Future<List<PaymentAssignment>> fetchPaymentAssignments({
     required List<int> classIds,
@@ -49,7 +49,7 @@ class PaymentService {
 
 class TeacherClassService {
   static const String _baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   static Future<List<TeacherClass>> fetchTeacherClasses() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

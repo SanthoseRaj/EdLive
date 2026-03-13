@@ -72,7 +72,7 @@ class _StudentToDoListPageState extends State<StudentToDoListPage> {
       if (token == null || studentId == null) return;
 
       final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/todos/student/$studentId',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/todos/student/$studentId',
       );
 
       final response = await http.get(
@@ -131,7 +131,7 @@ class _StudentToDoListPageState extends State<StudentToDoListPage> {
   ) async {
     try {
       final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed?studentId=$studentId',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId',
       );
       await http.post(
         url,
@@ -146,7 +146,7 @@ class _StudentToDoListPageState extends State<StudentToDoListPage> {
 
   Future<void> _fetchClassList() async {
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/classes',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
     );
     try {
       final response = await http.get(url);
@@ -180,7 +180,7 @@ class _StudentToDoListPageState extends State<StudentToDoListPage> {
 
   Future<void> _openFile(String filePath) async {
     final fullUrl =
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000$filePath";
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443$filePath";
     if (await canLaunchUrl(Uri.parse(fullUrl))) {
       await launchUrl(Uri.parse(fullUrl), mode: LaunchMode.externalApplication);
     } else {

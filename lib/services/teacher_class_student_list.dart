@@ -8,7 +8,7 @@ import '../models/teacher_class_student.dart';
 class StudentService {
   static Future<List<Student>> fetchStudents(String token) async {
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/staff/staff/students/list',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/students/list',
     );
 
     final response = await http.get(
@@ -28,7 +28,7 @@ class StudentService {
   }
 
   static Future<StudentDetail> fetchStudentDetail(int id, String token) async {
-    final url = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/studentview/$id';
+    final url = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/studentview/$id';
     final response = await http.get(
       Uri.parse(url),
       headers: {

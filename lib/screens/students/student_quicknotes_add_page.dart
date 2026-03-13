@@ -53,7 +53,7 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
 
       // ✅ Correct API Endpoint
       final url =
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/stickynotes/$studentId?user_type=Student';
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/stickynotes/$studentId?user_type=Student';
 
       final body = jsonEncode({
         "notes": note,

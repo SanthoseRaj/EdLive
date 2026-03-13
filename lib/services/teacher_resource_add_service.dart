@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherResourceAddService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/resources";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/resources";
 
   static Future<bool> addResource({
     required String title,

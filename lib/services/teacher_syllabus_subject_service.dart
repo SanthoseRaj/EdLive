@@ -5,7 +5,7 @@ import '../models/teacher_syllabus_subject_model.dart';
 class SubjectService {
   Future<List<SubjectModel>> fetchSubjects() async {
     final url = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/subjects");
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/subjects");
 
     final response = await http.get(
       url,

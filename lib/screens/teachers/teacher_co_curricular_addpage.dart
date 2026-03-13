@@ -159,7 +159,7 @@ class _AddCoCurricularActivityPageState
 
       final response = await http.post(
         Uri.parse(
-            'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/co-curricular/enroll'),
+            'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/enroll'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -208,7 +208,7 @@ class _AddCoCurricularActivityPageState
 
       final response = await http.delete(
         Uri.parse(
-            'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/co-curricular/remove'
+            'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/remove'
             '?studentId=${selectedStudent!.id}&activityId=$selectedActivity'),
         headers: {
           'Authorization': 'Bearer $token',

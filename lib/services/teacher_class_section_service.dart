@@ -35,7 +35,7 @@ class TeacherClassService {
     }
 
     final url = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/staff/staff/teacher/class");
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/teacher/class");
 
     final response = await http.get(
       url,

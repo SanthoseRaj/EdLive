@@ -12,7 +12,7 @@ class StudentTaskProvider with ChangeNotifier {
   Set<String> _seenTaskIds = {}; // Track seen task IDs
 
   final String _baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/todos/student';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/todos/student';
 
   void setAuthToken(String? token) {
     _authToken = token;

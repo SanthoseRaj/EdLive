@@ -67,7 +67,7 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
     final token = prefs.getString('auth_token') ?? '';
 
     final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/syllabus');
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/syllabus');
     final body = jsonEncode({
       "class_id": classId,
       "subject_id": subjectId,

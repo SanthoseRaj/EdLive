@@ -5,7 +5,7 @@ import '../models/teacher_resource_subject_model.dart';
 
 class SubjectResourceService {
   static const String subjectUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/resources/teacher/subjects";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/resources/teacher/subjects";
 
   static Future<List<TeacherSubjectModel>> fetchTeacherSubjects() async {
     final prefs = await SharedPreferences.getInstance();

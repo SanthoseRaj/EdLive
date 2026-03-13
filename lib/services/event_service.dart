@@ -3,7 +3,7 @@
 // import '../models/event_model.dart';
 
 // class EventService {
-//   final String baseUrl = "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api";
+//   final String baseUrl = "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
 //   Future<List<Event>> fetchEvents(String token) async {
 //     final response = await http.get(

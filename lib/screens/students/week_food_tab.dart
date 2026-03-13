@@ -49,7 +49,7 @@ class _WeekFoodTabState extends State<WeekFoodTab> {
           "${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')}";
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/weekly-menu?date=$formattedDate";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/weekly-menu?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -88,7 +88,7 @@ class _WeekFoodTabState extends State<WeekFoodTab> {
       await Future.wait(weekDates.map((date) async {
         final dateKey = DateFormat("yyyy-MM-dd").format(date);
         final url =
-            "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/schedule/$studentId/$dateKey";
+            "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$dateKey";
 
         try {
           final response = await http.get(
@@ -242,7 +242,7 @@ class _WeekFoodTabState extends State<WeekFoodTab> {
         };
 
         final url =
-            "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/schedule";
+            "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule";
 
         final response = await http.post(
           Uri.parse(url),

@@ -5,7 +5,7 @@ import '../models/transport_model.dart';
 
 class TransportService {
   static const String baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api';
 
   Future<Transport?> getTransportDetails(int staffId, String academicYear) async {
     final prefs = await SharedPreferences.getInstance();

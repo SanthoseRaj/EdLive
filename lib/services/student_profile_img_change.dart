@@ -32,7 +32,7 @@ class StudentProfileImageUploader {
       final token = prefs.getString('auth_token') ?? '';
 
       final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/student/students/\$studentId/image',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/\$studentId/image',
       );
 
       final request = http.MultipartRequest('PATCH', url)

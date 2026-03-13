@@ -5,7 +5,7 @@ import '../models/teacher_special_care_item.dart';
 
 class SpecialCareItemService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/special-care";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/special-care";
 
   // Create special care item
   Future<SpecialCareItem> createSpecialCareItem(SpecialCareItem item) async {

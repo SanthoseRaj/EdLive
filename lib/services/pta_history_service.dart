@@ -6,7 +6,7 @@ import 'package:school_app/services/class_section_service.dart';
 import '../models/pta_history_model.dart';
 
 class PTAHistoryService {
-  static const String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<List<PTAHistory>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();

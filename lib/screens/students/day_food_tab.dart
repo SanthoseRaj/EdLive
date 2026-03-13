@@ -157,7 +157,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
           "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/weekly-menu?date=$formattedDate";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/weekly-menu?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -221,7 +221,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
       };
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/schedule";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule";
 
       final response = await http.post(
         Uri.parse(url),
@@ -279,7 +279,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/schedule/$studentId/$apiDate";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$apiDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -318,7 +318,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
 
     final response = await http.get(
       Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/weekdays',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/weekdays',
       ),
       headers: {
         'Authorization': 'Bearer $token',

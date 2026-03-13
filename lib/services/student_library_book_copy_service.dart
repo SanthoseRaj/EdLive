@@ -6,7 +6,7 @@ import '../models/student_library_copy.dart';
 
 class StudentLibraryService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library";
 
   Future<List<StudentLibraryBook>> fetchAllBooks() async {
     final prefs = await SharedPreferences.getInstance();

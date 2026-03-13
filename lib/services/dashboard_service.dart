@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
   static Future<bool> markItemViewed(String itemType, int itemId) async {
     try {

@@ -47,7 +47,7 @@ class TimetableProvider with ChangeNotifier {
   }
 
   Future<void> fetchPeriods() async {
-    final url = Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/periods');
+    final url = Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/periods');
     final res = await http.get(url);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as List;
@@ -58,7 +58,7 @@ class TimetableProvider with ChangeNotifier {
   Future<void> fetchTimetable() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
-    final url = Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/staff/staff/timetable/2024-2025');
+    final url = Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/timetable/2024-2025');
     final res = await http.get(url, headers: {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',

@@ -154,7 +154,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
       if (token == null || studentId == null) return;
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed?studentId=$studentId";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId";
 
       final response = await http.post(
         Uri.parse(url),
@@ -229,7 +229,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -620,7 +620,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
 //       if (token == null || studentId == null) return;
 
 //       final url =
-//           "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed?studentId=$studentId";
+//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId";
 
 //       final response = await http.post(
 //         Uri.parse(url),
@@ -695,7 +695,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
 //       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
 //       final url =
-//           "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
+//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
 
 //       final response = await http.get(
 //         Uri.parse(url),

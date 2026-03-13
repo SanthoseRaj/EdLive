@@ -77,7 +77,7 @@ Future<void> _loadTokenAndData() async {
 
   Future<void> _fetchClassList() async {
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/classes',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
     );
 
     try {
@@ -506,7 +506,7 @@ Widget _buildTaskList(List<Todo> tasks, TeacherTaskProvider provider) {
                       onPressed: () async {
                         final url = task.fileUrl!.startsWith('http')
                             ? task.fileUrl!
-                            : 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/${task.fileUrl!}';
+                            : 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/${task.fileUrl!}';
 
                         try {
                           final uri = Uri.parse(url);

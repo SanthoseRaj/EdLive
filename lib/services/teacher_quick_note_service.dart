@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/teacher_quick_note_model.dart';
 
 class QuickNoteService {
-  static const String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/quicknotes';
+  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes';
 
   Future<List<QuickNote>> fetchQuickNotes({int? classId, int? studentId}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

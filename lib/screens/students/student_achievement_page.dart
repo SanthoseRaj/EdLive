@@ -59,7 +59,7 @@ String getFullFileUrl(String url) {
   if (url.startsWith("http")) {
     return url;
   } else {
-    return "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000$url";
+    return "https://schoolmanagement.canadacentral.cloudapp.azure.com:443$url";
   }
 }
 
@@ -138,7 +138,7 @@ class _StudentAchievementPageState extends State<StudentAchievementPage> {
 
       final response = await http.get(
         Uri.parse(
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/achievements/visible?studentId=$studentId",
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/achievements/visible?studentId=$studentId",
         ),
         headers: {
           'accept': 'application/json',
@@ -185,7 +185,7 @@ class _StudentAchievementPageState extends State<StudentAchievementPage> {
 
     final response = await http.get(
       Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/achievements/visible?studentId=$studentId",
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/achievements/visible?studentId=$studentId",
       ),
       headers: {
         'accept': 'application/json',
@@ -220,7 +220,7 @@ class _StudentAchievementPageState extends State<StudentAchievementPage> {
 
     try {
       final url = Uri.parse(
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed?studentId=$studentId",
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId",
       );
 
       final response = await http.post(

@@ -22,7 +22,7 @@ class DashboardProvider with ChangeNotifier {
 
       final response = await http.get(
         Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/counts',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/counts',
         ),
         headers: {
           'accept': 'application/json',
@@ -51,7 +51,7 @@ Future<void> markDashboardItemViewed(int itemId) async {
     if (token == null) return;
 
     final response = await http.post(
-      Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed'),
+      Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed'),
       headers: {
         'accept': 'application/json',
         'Content-Type': 'application/json',

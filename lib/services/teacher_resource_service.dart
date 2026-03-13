@@ -5,7 +5,7 @@ import '../models/teacher_resource_model.dart';
 
 class TeacherResourceMainService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/resources";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/resources";
 
   static Future<List<TeacherResourceModel>> fetchResources({
     int? classId,

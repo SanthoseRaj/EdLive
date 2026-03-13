@@ -542,7 +542,7 @@ class StickyNote {
 }
 
 class QuickNoteService {
-  static const String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();

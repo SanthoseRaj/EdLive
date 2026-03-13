@@ -89,7 +89,7 @@ class _StudentTimeTablePageState extends State<StudentTimeTablePage> {
       }
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/student/students/timetable/${widget.studentId}/${widget.academicYear}";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/timetable/${widget.studentId}/${widget.academicYear}";
       final response = await http.get(
         Uri.parse(url),
         headers: {"Authorization": "Bearer $token"},

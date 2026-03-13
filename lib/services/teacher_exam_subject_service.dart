@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/teacher_exam_subject.dart';
 
 class TeacherExamService {
-  final String baseUrl = "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000";
+  final String baseUrl = "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
 
   Future<List<TeacherExam>> fetchTeacherExams() async {
     final prefs = await SharedPreferences.getInstance();

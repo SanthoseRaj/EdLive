@@ -45,7 +45,7 @@ class _TeacherExamPageState extends State<TeacherExamPage>
       final token = prefs.getString('auth_token') ?? '';
 
       final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/teacher/$classId',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/teacher/$classId',
       );
 
       final response = await http.get(
@@ -72,7 +72,7 @@ class _TeacherExamPageState extends State<TeacherExamPage>
 
   Future<void> fetchClasses() async {
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/classes',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
     );
 
     try {

@@ -84,7 +84,7 @@ class _AnnounceClassTestPageState extends State<AnnounceClassTestPage> {
     final token = prefs.getString('auth_token') ?? '';
 
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/$id',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/$id',
     );
 
     try {
@@ -452,10 +452,10 @@ class _AnnounceClassTestPageState extends State<AnnounceClassTestPage> {
 
                         final url = _isEditMode
                             ? Uri.parse(
-                                'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/${widget.examId}',
+                                'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/${widget.examId}',
                               )
                             : Uri.parse(
-                                'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams',
+                                'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams',
                               );
 
                         final headers = {

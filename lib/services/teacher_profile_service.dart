@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherProfileService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
 
   /// Uploads new profile image for the staff
   Future<String?> updateProfileImage({required int staffId, required File imageFile}) async {

@@ -108,7 +108,7 @@ Future<void> pickAndUploadImage() async {
       }
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/staff/Staff/${widget.staffId}";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/Staff/${widget.staffId}";
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -175,7 +175,7 @@ CircleAvatar(
       : (teacherData?['profile_image'] != null &&
               teacherData!['profile_image'].toString().isNotEmpty)
           ? NetworkImage(
-              "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000${teacherData!['profile_image']}?v=${DateTime.now().millisecondsSinceEpoch}",
+              "https://schoolmanagement.canadacentral.cloudapp.azure.com:443${teacherData!['profile_image']}?v=${DateTime.now().millisecondsSinceEpoch}",
             )
           : null,
   child: (teacherData?['profile_image'] == null ||
@@ -334,10 +334,10 @@ CircleAvatar(
                       String url = "";
                     if (label == "PF Doc") {
   url =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/content/uploads${teacherData?['service']?[0]['pf_doc']}";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/content/uploads${teacherData?['service']?[0]['pf_doc']}";
 } else if (label == "Docs") {
   url =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/content/uploads${teacherData?['experience']?[0]['exp_docs']}";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/content/uploads${teacherData?['experience']?[0]['exp_docs']}";
 }
 
 
@@ -540,7 +540,7 @@ Widget _buildEducationTab() {
                         ? GestureDetector(
                             onTap: () async {
                               final url =
-                                  "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/content/uploads${edu['certificate']}";
+                                  "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/content/uploads${edu['certificate']}";
                               if (await canLaunchUrl(Uri.parse(url))) {
                                 await launchUrl(Uri.parse(url),
                                     mode: LaunchMode.externalApplication);

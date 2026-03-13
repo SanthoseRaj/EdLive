@@ -457,7 +457,7 @@ class StudentStickyNote {
 
 class StudentQuickNoteService {
   static const String baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -562,7 +562,7 @@ class StudentQuickNoteService {
 //       final classId = prefs.getInt("class_id") ?? 0;
 
 //       final url =
-//           "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/quicknotes?classId=$classId&studentId=$studentId";
+//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes?classId=$classId&studentId=$studentId";
 
 //       final response = await http.get(
 //         Uri.parse(url),

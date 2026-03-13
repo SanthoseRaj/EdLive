@@ -78,7 +78,7 @@ setState(() {
   final token = prefs.getString('auth_token') ?? '';
 
   final response = await http.post(
-    Uri.parse("http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed?studentId=$studentId"),
+    Uri.parse("https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId"),
     headers: {
       'accept': 'application/json',
       'Content-Type': 'application/json',

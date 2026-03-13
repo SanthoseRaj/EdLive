@@ -90,7 +90,7 @@ class _EventsHolidaysPageState extends State<EventsHolidaysPage> {
 
   Future<void> _fetchMonthData(int year, int month) async {
     final url = Uri.parse(
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/events-holidays/$year/$month",
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/events-holidays/$year/$month",
     );
 
     try {

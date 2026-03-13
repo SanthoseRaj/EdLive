@@ -162,7 +162,7 @@ class _TeacherAttendanceDayTabState extends State<TeacherAttendanceDayTab> {
   Future<void> loadClassSections() async {
     try {
       final response = await http.get(Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/classes',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
       ));
 
       if (response.statusCode == 200) {
@@ -218,7 +218,7 @@ class _TeacherAttendanceDayTabState extends State<TeacherAttendanceDayTab> {
 
         final response = await http.get(
           Uri.parse(
-            'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/student?studentId=${student.id}&date=${DateFormat('yyyy-MM-dd').format(selectedDate)}',
+            'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/student?studentId=${student.id}&date=${DateFormat('yyyy-MM-dd').format(selectedDate)}',
           ),
           headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
         );
@@ -261,7 +261,7 @@ class _TeacherAttendanceDayTabState extends State<TeacherAttendanceDayTab> {
     try {
       final response = await http.get(
         Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/student?studentId=${student.id}&date=${DateFormat('yyyy-MM-dd').format(selectedDate)}',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/student?studentId=${student.id}&date=${DateFormat('yyyy-MM-dd').format(selectedDate)}',
         ),
         headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
       );
@@ -297,7 +297,7 @@ class _TeacherAttendanceDayTabState extends State<TeacherAttendanceDayTab> {
 
       final response = await http.post(
         Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/toggle',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/toggle',
         ),
         headers: {
           'Content-Type': 'application/json',
@@ -652,7 +652,7 @@ class _TeacherAttendanceMonthTabState extends State<TeacherAttendanceMonthTab> {
   Future<void> loadClassSections() async {
     try {
       final response = await http.get(Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/classes',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
       ));
 
       if (response.statusCode == 200) {
@@ -688,7 +688,7 @@ class _TeacherAttendanceMonthTabState extends State<TeacherAttendanceMonthTab> {
 
       final response = await http.get(
         Uri.parse(
-            'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/monthly?classId=$classId&startDate=$startDate&endDate=$endDate'),
+            'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/monthly?classId=$classId&startDate=$startDate&endDate=$endDate'),
         headers: {
           'Authorization': 'Bearer $token',
           'accept': '*/*',
@@ -898,7 +898,7 @@ void initState() {
 Future<void> loadClassSections() async {
   try {
     final response = await http.get(Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/master/classes',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
     ));
 
     if (response.statusCode == 200) {
@@ -935,7 +935,7 @@ if (classId == null) return;
 
       final response = await http.get(
         Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/monthly?classId=$classId&startDate=$startDate&endDate=$endDate',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/monthly?classId=$classId&startDate=$startDate&endDate=$endDate',
         ),
         headers: {
           'Authorization': 'Bearer $token',

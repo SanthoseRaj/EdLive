@@ -145,7 +145,7 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
 
       final response = await http.post(
         Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed',
         ),
         headers: {
           'accept': 'application/json',
@@ -239,7 +239,7 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
 
     final response = await http.get(
       Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library/members',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/members',
       ),
       headers: {
         'accept': 'application/json',
@@ -305,7 +305,7 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
 
       final response = await http.post(
         Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library/members',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/members',
         ),
         headers: {
           'accept': 'application/json',

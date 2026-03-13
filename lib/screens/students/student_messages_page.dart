@@ -46,7 +46,7 @@ class StudentMessage {
 /// ---------------- SERVICE ----------------
 class MessageService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
   static Future<List<StudentMessage>> fetchMessages(int studentId) async {
     final prefs = await SharedPreferences.getInstance();

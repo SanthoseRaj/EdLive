@@ -53,7 +53,7 @@ class _AddStickyNotePageState extends State<AddStickyNotePage> {
       }
 
       final url =
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/stickynotes/$teacherId';
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/stickynotes/$teacherId';
 
       final body = jsonEncode({
         "notes": note,

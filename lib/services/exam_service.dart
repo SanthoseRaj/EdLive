@@ -10,7 +10,7 @@ class ExamService {
   final token = prefs.getString('auth_token') ?? '';
 
   final url = Uri.parse(
-    'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/student/$studentId',
+    'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/student/$studentId',
   );
 
   final response = await http.get(

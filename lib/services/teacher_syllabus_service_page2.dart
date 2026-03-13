@@ -52,7 +52,7 @@ class SyllabusTerm {
 
 class SyllabusService {
   final String baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<List<SyllabusTerm>> fetchSyllabus(
       int classId, int subjectId, String academicYear) async {

@@ -25,7 +25,7 @@ class AttendanceProvider with ChangeNotifier {
       final token = prefs.getString('auth_token') ?? '';
 
       final response = await http.get(
-        Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/teacher?classId=$classId&date=$date'),
+        Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/teacher?classId=$classId&date=$date'),
         headers: {
           'Authorization': 'Bearer $token',
           'accept': '*/*',

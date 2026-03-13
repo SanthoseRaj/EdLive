@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/auth/login',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/auth/login',
     );
 
     try {
@@ -47,76 +47,91 @@ class _LoginPageState extends State<LoginPage> {
         final user = data['user'];
         final userType = user['usertype']?.toString().toLowerCase();
 
-      if (token != null && userType != null) {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('auth_token', token);
-  await prefs.setString('user_type', userType);
-  await prefs.setString('user_data', jsonEncode(user)); // store complete user info
+        if (token != null && userType != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', token);
+          await prefs.setString('user_type', userType);
+          await prefs.setString(
+            'user_data',
+            jsonEncode(user),
+          ); // store complete user info
 
-  if (userType == 'student' && user['student_id'] != null) {
-    await prefs.setInt('student_id', int.parse(user['student_id'].toString()));
-  }
+          if (userType == 'student' && user['student_id'] != null) {
+            await prefs.setInt(
+              'student_id',
+              int.parse(user['student_id'].toString()),
+            );
+          }
 
-  if (userType == 'teacher') {
-    Navigator.pushReplacementNamed(context, '/dashboard');
-  } else if (userType == 'student' || userType == 'parent') {
-    // ✅ Fetch children first
-    final childrenResponse = await http.get(
-      Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/student/parents/children'),
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+          if (userType == 'teacher') {
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          } else if (userType == 'student' || userType == 'parent') {
+            // ✅ Fetch children first
+            final childrenResponse = await http.get(
+              Uri.parse(
+                'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/parents/children',
+              ),
+              headers: {
+                'accept': 'application/json',
+                'Authorization': 'Bearer $token',
+              },
+            );
 
-    if (childrenResponse.statusCode == 200) {
-      final List<dynamic> childrenData = json.decode(childrenResponse.body);
+            if (childrenResponse.statusCode == 200) {
+              final List<dynamic> childrenData = json.decode(
+                childrenResponse.body,
+              );
 
-      if (childrenData.length == 1) {
-        // Only 1 child → go directly to StudentDashboardPage
-        final child = childrenData[0];
-        await prefs.setString('selected_child', jsonEncode({
-          'id': child['id'],
-          'user_id': child['user_id'],
-          'name': child['full_name'],
-          'image': child['profile_img'] != null
-              ? 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000${child['profile_img']}'
-              : '',
-          'class': child['class_name'] ?? '',
-          'class_id': child['class_id'],
-          'notification': 0,
-        }));
-        await prefs.setInt('student_id', child['id']);
-        await prefs.setInt('class_id', child['class_id']);
+              if (childrenData.length == 1) {
+                // Only 1 child → go directly to StudentDashboardPage
+                final child = childrenData[0];
+                await prefs.setString(
+                  'selected_child',
+                  jsonEncode({
+                    'id': child['id'],
+                    'user_id': child['user_id'],
+                    'name': child['full_name'],
+                    'image': child['profile_img'] != null
+                        ? 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443${child['profile_img']}'
+                        : '',
+                    'class': child['class_name'] ?? '',
+                    'class_id': child['class_id'],
+                    'notification': 0,
+                  }),
+                );
+                await prefs.setInt('student_id', child['id']);
+                await prefs.setInt('class_id', child['class_id']);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => StudentDashboardPage(
-              childData: json.decode(prefs.getString('selected_child')!),
-            ),
-          ),
-        );
-      } else {
-        // 2 or more children → go to SelectChildPage
-        Navigator.pushReplacementNamed(
-          context,
-          '/select-child',
-          arguments: user,
-        );
-      }
-    } else {
-      // Failed to fetch children → fallback to SelectChildPage
-      Navigator.pushReplacementNamed(
-        context,
-        '/select-child',
-        arguments: user,
-      );
-    }
-  } else {
-    _showError('Missing token or user type.');
-  }
-   }
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => StudentDashboardPage(
+                      childData: json.decode(
+                        prefs.getString('selected_child')!,
+                      ),
+                    ),
+                  ),
+                );
+              } else {
+                // 2 or more children → go to SelectChildPage
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/select-child',
+                  arguments: user,
+                );
+              }
+            } else {
+              // Failed to fetch children → fallback to SelectChildPage
+              Navigator.pushReplacementNamed(
+                context,
+                '/select-child',
+                arguments: user,
+              );
+            }
+          } else {
+            _showError('Missing token or user type.');
+          }
+        }
       } else {
         final errorData = json.decode(response.body);
         final errorMessage = errorData['message'] ?? 'Login failed';
@@ -209,26 +224,29 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 20),
 
-TextField(
-  controller: _passwordController,
-  obscureText: _obscurePassword,
-  decoration: InputDecoration(
-    labelText: 'Password',
-    border: const OutlineInputBorder(),
-    prefixIcon: const Icon(Icons.lock),
-    suffixIcon: IconButton(
-      icon: Icon(
-        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-        color: Colors.grey,
-      ),
-      onPressed: () {
-        setState(() {
-          _obscurePassword = !_obscurePassword;
-        });
-      },
-    ),
-  ),
-),    const SizedBox(height: 10),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
 
                 Align(
                   alignment: Alignment.centerRight,

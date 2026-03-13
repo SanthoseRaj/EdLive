@@ -9,7 +9,7 @@ class LibraryService {
       final token = prefs.getString('auth_token');
 
       final response = await http.get(
-        Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library/members'),
+        Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/members'),
         headers: {
           'accept': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',

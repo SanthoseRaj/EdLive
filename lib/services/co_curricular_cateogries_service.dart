@@ -22,7 +22,7 @@ class CoCurricularCategoryService {
     final token = prefs.getString('auth_token') ?? '';
 
     final response = await http.get(
-      Uri.parse('http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/co-curricular/categories'),
+      Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/categories'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',

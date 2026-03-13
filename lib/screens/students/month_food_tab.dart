@@ -44,7 +44,7 @@ Future<void> _loadInitialData() async {
           "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/weekly-menu?date=$formattedDate";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/weekly-menu?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -87,7 +87,7 @@ Future<void> _loadInitialData() async {
       final dateKey = DateFormat("yyyy-MM-dd").format(date);
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/schedule/$studentId/$dateKey";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$dateKey";
 
       try {
         final response = await http.get(
@@ -260,7 +260,7 @@ void _selectAllWeek() {
         };
 
         final url =
-            "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/food/schedule";
+            "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule";
 
         final response = await http.post(
           Uri.parse(url),

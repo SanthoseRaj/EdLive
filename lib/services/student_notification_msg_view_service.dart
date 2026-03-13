@@ -5,7 +5,7 @@ import 'package:school_app/models/student_notification_msg_view_model.dart';
 
 class NotificationReplyService {
   final String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
   Future<List<NotificationReply>> fetchReplies({
     required int itemId,

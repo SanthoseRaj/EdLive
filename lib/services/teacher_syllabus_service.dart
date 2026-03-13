@@ -4,7 +4,7 @@ import '../models/teacher_syllabus_model.dart';
 
 class SyllabusService {
   final String baseUrl =
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<List<Subject>> fetchSubjects(int classId) async {
     final url = Uri.parse('$baseUrl/api/syllabus/subjects/$classId');

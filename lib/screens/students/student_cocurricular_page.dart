@@ -61,7 +61,7 @@ Future<void> fetchStudentActivities({bool autoUpdate = false}) async {
     }
 
     final url =
-        "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/co-curricular/student-activities"
+        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/student-activities"
         "?studentId=${widget.studentId}&academicYear=${widget.academicYear}";
 
     final response = await http.get(

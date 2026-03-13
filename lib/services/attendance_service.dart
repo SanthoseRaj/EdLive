@@ -16,7 +16,7 @@ class AttendanceService {
 
     final response = await http.get(
       Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/attendance/teacher?classId=$classId&date=$date',
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/teacher?classId=$classId&date=$date',
       ),
       headers: {
         'Authorization': 'Bearer $token',

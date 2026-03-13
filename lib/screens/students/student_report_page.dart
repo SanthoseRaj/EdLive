@@ -74,7 +74,7 @@ Future<void> fetchExamTypes() async {
   final token = prefs.getString('auth_token') ?? '';
 
   final url = Uri.parse(
-    'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams/results/student/${widget.studentId}?examTypeId=${selectedExamType!.id}',
+    'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/results/student/${widget.studentId}?examTypeId=${selectedExamType!.id}',
   );
 
   final response = await http.get(

@@ -6,7 +6,7 @@ class StudentService {
   // ... your existing fetchStudents() here
 
   static Future<StudentDetail> fetchStudentDetail(int id, String token) async {
-    final url = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/studentview/$id';
+    final url = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/studentview/$id';
     final res = await http.get(
       Uri.parse(url),
       headers: {'Authorization': 'Bearer $token'},

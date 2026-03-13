@@ -7,7 +7,7 @@ import 'package:school_app/models/class_section.dart';
 import 'package:school_app/services/class_section_service.dart';
 
 class PTAService {
-  static const String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<List<PTAMeeting>> getUpcomingMeetings() async {
     final prefs = await SharedPreferences.getInstance();

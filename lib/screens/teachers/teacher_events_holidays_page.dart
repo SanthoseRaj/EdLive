@@ -65,7 +65,7 @@ class _TeacherEventsHolidaysPageState
     setState(() => isLoading = true);
     try {
       final url =
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/events-holidays/$year/$month';
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/events-holidays/$year/$month';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

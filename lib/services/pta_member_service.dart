@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/pta_member_model.dart';
 
 class PTAMemberService {
-  static const String baseUrl = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
   Future<List<PTAMember>> getMembers() async {
     final prefs = await SharedPreferences.getInstance();

@@ -43,7 +43,7 @@
         final token = prefs.getString('auth_token') ?? '';
 
         final url = Uri.parse(
-          'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/student/students/${widget.studentId}',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/${widget.studentId}',
         );
         final res = await http.get(url, headers: {
           'Authorization': 'Bearer $token',
@@ -89,7 +89,7 @@
       );
     }
 
-  final String _imgBase = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  final String _imgBase = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
 
   Widget _networkImage(String? imageUrl, {double size = 120}) {
@@ -97,7 +97,7 @@
       return _placeholderImage(size);
     }
 
-    final String imgBase = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+    final String imgBase = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:443';
     String fullUrl;
 
     if (imageUrl.startsWith('/data/user/') || imageUrl.startsWith('C:')) {
@@ -164,7 +164,7 @@
       final parent = data!['parent'] ?? {};
       final health = data!['health'] ?? {};
       final caste = data!['caste_religion'] ?? {};
-  final imgBase = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000';
+  final imgBase = 'http://schoolmanagement.canadacentral.cloudapp.azure.com:443';
 
 
       return DefaultTabController(

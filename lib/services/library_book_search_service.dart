@@ -6,7 +6,7 @@ import '/models/student_library_book.dart';
 
 class LibraryApiService {
   static const String baseUrl =
-      "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/library";
+      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library";
 
   /// Search books and return model objects
   static Future<List<StudentLibraryBook>> searchBooks({

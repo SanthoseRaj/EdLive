@@ -76,7 +76,7 @@ class _TeacherNotificationPageState extends State<TeacherNotificationPage> {
       if (token == null) return;
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed";
 
       await http.post(
         Uri.parse(url),
@@ -119,7 +119,7 @@ class _TeacherNotificationPageState extends State<TeacherNotificationPage> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
       final url =
-          "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/daily-notifications?date=$formattedDate";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -849,7 +849,7 @@ void _navigateToModule(NotificationItem item) {
 //       if (token == null) return;
 
 //       final url =
-//           "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/viewed";
+//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed";
 
 //       await http.post(
 //         Uri.parse(url),
@@ -895,7 +895,7 @@ void _navigateToModule(NotificationItem item) {
 //       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
 //       final url =
-//           "http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/dashboard/daily-notifications?date=$formattedDate";
+//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?date=$formattedDate";
 
 //       final response = await http.get(
 //         Uri.parse(url),

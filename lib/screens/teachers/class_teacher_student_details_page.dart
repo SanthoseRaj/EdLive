@@ -32,7 +32,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     final token = prefs.getString('auth_token') ?? '';
 
     final url = Uri.parse(
-        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/student/students/${widget.studentId}');
+        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/${widget.studentId}');
 
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer $token',
@@ -90,7 +90,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                                   CircleAvatar(
                                     radius: 60,
                                     backgroundImage: NetworkImage(
-                                        'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000${student!['profile_img'] ?? ''}'),
+                                        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443${student!['profile_img'] ?? ''}'),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(

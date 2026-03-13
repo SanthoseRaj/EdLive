@@ -12,7 +12,7 @@ class AnnounceExamService {
     required int examTypeId,
   }) async {
     final url = Uri.parse(
-      'http://schoolmanagement.canadacentral.cloudapp.azure.com:5000/api/exams',
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams',
     );
 
     final prefs = await SharedPreferences.getInstance();
