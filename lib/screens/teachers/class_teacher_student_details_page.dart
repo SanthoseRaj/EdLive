@@ -5,8 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:school_app/widgets/teacher_app_bar.dart';
 import 'teacher_menu_drawer.dart';
-
-  
+import 'package:school_app/config/config.dart';
 
 class StudentDetailPage extends StatefulWidget {
   final int studentId;
@@ -32,12 +31,13 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     final token = prefs.getString('auth_token') ?? '';
 
     final url = Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/${widget.studentId}');
+      '${AppConfig.baseUrl}/student/students/${widget.studentId}',
+    );
 
-    final response = await http.get(url, headers: {
-      'Authorization': 'Bearer $token',
-      'accept': '*/*',
-    });
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+    );
 
     if (response.statusCode == 200) {
       setState(() {
@@ -54,88 +54,91 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-          drawer:const MenuDrawer(), 
-  appBar: const TeacherAppBar(),
-// Optional if you have a drawer
+        drawer: const MenuDrawer(),
+        appBar: const TeacherAppBar(),
+        // Optional if you have a drawer
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
             : student == null
-                ? const Center(child: Text("Failed to load student"))
-                : Column(
-                    children: [
-                      // Top Section
-                      Container(
-                        width: double.infinity,
-                        color: const Color(0xFF2E99EF),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: const Text(
-                                '< Back',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+            ? const Center(child: Text("Failed to load student"))
+            : Column(
+                children: [
+                  // Top Section
+                  Container(
+                    width: double.infinity,
+                    color: const Color(0xFF2E99EF),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Text(
+                            '< Back',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Center(
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 60,
+                                backgroundImage: NetworkImage(
+                                  '${AppConfig.serverOrigin}${student!['profile_img'] ?? ''}',
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Center(
-                              child: Column(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 60,
-                                    backgroundImage: NetworkImage(
-                                        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443${student!['profile_img'] ?? ''}'),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    student!['full_name'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 6),
+                              Text(
+                                student!['full_name'] ?? '',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  ),
 
-                      // Tabs
-                      const TabBar(
-                        labelColor: Color(0xFF29ABE2),
-                        unselectedLabelColor: Colors.black54,
-                        indicatorColor: Color(0xFF29ABE2),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        tabs: [
-                          Tab(text: 'Basic Info'),
-                          Tab(text: 'Parent/Guardian'),
-                          Tab(text: 'Documents'),
-                        ],
-                      ),
-
-                      // Tab Views
-                      Expanded(
-                        child: TabBarView(
-                          children: [
-                            _buildBasicInfoTab(),
-                            _buildParentTab(),
-                            _buildDocumentsTab(),
-                          ],
-                        ),
-                      ),
+                  // Tabs
+                  const TabBar(
+                    labelColor: Color(0xFF29ABE2),
+                    unselectedLabelColor: Colors.black54,
+                    indicatorColor: Color(0xFF29ABE2),
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    tabs: [
+                      Tab(text: 'Basic Info'),
+                      Tab(text: 'Parent/Guardian'),
+                      Tab(text: 'Documents'),
                     ],
                   ),
+
+                  // Tab Views
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildBasicInfoTab(),
+                        _buildParentTab(),
+                        _buildDocumentsTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -156,15 +159,27 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           _infoText("Contact:", basic?['contact_number']),
           const SizedBox(height: 16),
           const Divider(),
-          const Text("School Info", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          _infoText("Admission Date:", school?['admission_date']?.split('T')[0]),
+          const Text(
+            "School Info",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          _infoText(
+            "Admission Date:",
+            school?['admission_date']?.split('T')[0],
+          ),
           _infoText("Class Joined:", school?['class_joined']),
           _infoText("Previous School:", school?['prev_school']),
           _infoText("Class Teacher:", school?['class_teacher']),
           const SizedBox(height: 16),
           const Divider(),
-          const Text("Health Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          _infoText("Disability:", health?['disability'] == true ? "Yes" : "No"),
+          const Text(
+            "Health Details",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          _infoText(
+            "Disability:",
+            health?['disability'] == true ? "Yes" : "No",
+          ),
           _infoText("Disability Details:", health?['disability_details']),
           _infoText("Disease:", health?['disease'] == true ? "Yes" : "No"),
           _infoText("Disease Details:", health?['disease_details']),
@@ -209,13 +224,25 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
           SizedBox(height: 24),
-          Text("Student’s ID/Passport", style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            "Student’s ID/Passport",
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           SizedBox(height: 8),
-          Text("No: 45675789790898", style: TextStyle(color: Color(0xFF29ABE2))),
+          Text(
+            "No: 45675789790898",
+            style: TextStyle(color: Color(0xFF29ABE2)),
+          ),
           SizedBox(height: 24),
-          Text("Parent’s ID/Passport", style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            "Parent’s ID/Passport",
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           SizedBox(height: 8),
-          Text("No: 45675789790898", style: TextStyle(color: Color(0xFF29ABE2))),
+          Text(
+            "No: 45675789790898",
+            style: TextStyle(color: Color(0xFF29ABE2)),
+          ),
         ],
       ),
     );
@@ -257,14 +284,30 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             child: Icon(Icons.person, color: Colors.white, size: 60),
           ),
           const SizedBox(height: 10),
-          Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2E3192))),
-          Text("($role)", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(
+            name,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2E3192),
+            ),
+          ),
+          Text(
+            "($role)",
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           const SizedBox(height: 12),
           _infoText("Age:", age),
           _infoText("Occupation:", occupation),
           _infoText("Mobile:", mobile),
           _infoText("Email:", email),
-          const Align(alignment: Alignment.centerLeft, child: Text("Address", style: TextStyle(fontWeight: FontWeight.bold))),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Address",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           Align(alignment: Alignment.centerLeft, child: Text(address ?? 'N/A')),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class TeacherClass {
   final int id;
@@ -34,8 +35,7 @@ class TeacherClassService {
       throw Exception("No auth token found");
     }
 
-    final url = Uri.parse(
-        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/teacher/class");
+    final url = Uri.parse("${AppConfig.baseUrl}/staff/staff/teacher/class");
 
     final response = await http.get(
       url,

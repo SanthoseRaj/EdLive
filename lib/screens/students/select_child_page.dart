@@ -181,9 +181,7 @@ class _SelectChildPageState extends State<SelectChildPage> {
       final token = prefs.getString('auth_token');
 
       final response = await http.get(
-        Uri.parse(
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/parents/children',
-        ),
+        Uri.parse('${AppConfig.baseUrl}/student/parents/children'),
         headers: {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',

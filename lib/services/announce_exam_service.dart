@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class AnnounceExamService {
   static Future<bool> createExam({
@@ -11,9 +12,7 @@ class AnnounceExamService {
     required String description,
     required int examTypeId,
   }) async {
-    final url = Uri.parse(
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams',
-    );
+    final url = Uri.parse('${AppConfig.baseUrl}/exams');
 
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';

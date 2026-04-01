@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 
 class TokenStorage {
   static const _key = "auth_token";
@@ -22,8 +23,7 @@ class TokenStorage {
 }
 
 class QuickNoteService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes";
+  String get baseUrl => '${AppConfig.baseUrl}/quicknotes';
 
   /// Create a quick note
   Future<Map<String, dynamic>> createQuickNote({
@@ -66,15 +66,11 @@ class QuickNoteService {
     final token = await TokenStorage.getToken();
     if (token == null) throw Exception("Auth token not found");
 
-    final url = Uri.parse(
-        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes/classes/$classId/students");
+    final url = Uri.parse('$baseUrl/classes/$classId/students');
 
     final response = await http.get(
       url,
-      headers: {
-        "accept": "*/*",
-        "Authorization": "Bearer $token",
-      },
+      headers: {"accept": "*/*", "Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {

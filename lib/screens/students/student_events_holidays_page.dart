@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:school_app/config/config.dart';
 
 import 'package:school_app/widgets/student_app_bar.dart';
 import 'student_menu_drawer.dart';
@@ -115,9 +116,7 @@ class _EventsHolidaysPageState extends State<EventsHolidaysPage> {
   }
 
   Future<List<EventHoliday>> _fetchMonthData(int year, int month) async {
-    final url = Uri.parse(
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/events-holidays/$year/$month',
-    );
+    final url = AppConfig.apiUri('/events-holidays/$year/$month');
 
     try {
       final response = await http.get(

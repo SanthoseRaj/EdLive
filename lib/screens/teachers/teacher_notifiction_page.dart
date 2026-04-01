@@ -12,6 +12,7 @@ import 'teacher_payments_page.dart';
 import 'teacher_achivement_page.dart';
 import 'teacher_message_page.dart';
 import 'teacher_add_library_book_page.dart';
+import 'package:school_app/config/config.dart';
 
 // ----------------- MODEL -----------------
 class NotificationItem {
@@ -75,8 +76,7 @@ class _TeacherNotificationPageState extends State<TeacherNotificationPage> {
       final token = prefs.getString("auth_token");
       if (token == null) return;
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed";
+      final url = "${AppConfig.baseUrl}/dashboard/viewed";
 
       await http.post(
         Uri.parse(url),
@@ -119,7 +119,7 @@ class _TeacherNotificationPageState extends State<TeacherNotificationPage> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
       final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?date=$formattedDate";
+          "${AppConfig.baseUrl}/dashboard/daily-notifications?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -187,55 +187,55 @@ class _TeacherNotificationPageState extends State<TeacherNotificationPage> {
   }
 
   // Navigate based on notification type
-void _navigateToModule(NotificationItem item) {
-  switch (item.moduleType.toLowerCase()) {
-    case 'todo':
-    case 'to-do':
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ToDoListPage()),
-      );
-      break;
+  void _navigateToModule(NotificationItem item) {
+    switch (item.moduleType.toLowerCase()) {
+      case 'todo':
+      case 'to-do':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ToDoListPage()),
+        );
+        break;
 
-    case 'payments':
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const TeacherPaymentsPage()),
-      );
-      break;
+      case 'payments':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const TeacherPaymentsPage()),
+        );
+        break;
 
-    // ✅ Achievements module
-    case 'achievement':
-    case 'achievements':
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const TeacherAchievementPage()),
-      );
-      break;
+      // ✅ Achievements module
+      case 'achievement':
+      case 'achievements':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const TeacherAchievementPage()),
+        );
+        break;
 
-    // ✅ Library module
-    case 'library':
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AddLibraryBookPage()),
-      );
-      break;
+      // ✅ Library module
+      case 'library':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddLibraryBookPage()),
+        );
+        break;
 
-    // ✅ Message module
-    case 'message':
-    case 'messages':
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const TeacherMessagePage()),
-      );
-      break;
+      // ✅ Message module
+      case 'message':
+      case 'messages':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const TeacherMessagePage()),
+        );
+        break;
 
-    default:
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No linked page for ${item.moduleType}")),
-      );
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("No linked page for ${item.moduleType}")),
+        );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -284,136 +284,122 @@ void _navigateToModule(NotificationItem item) {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _error != null
-                      ? Center(child: Text(_error!))
-                      : _notificationsByDate.isEmpty
-                          ? const Center(
-                              child: Text("No notifications found."),
-                            )
-                          : ListView(
-                              children: [
-                                ..._notificationsByDate.entries.map((entry) {
-                                  final date = entry.key;
-                                  final items = entry.value;
+                  ? Center(child: Text(_error!))
+                  : _notificationsByDate.isEmpty
+                  ? const Center(child: Text("No notifications found."))
+                  : ListView(
+                      children: [
+                        ..._notificationsByDate.entries.map((entry) {
+                          final date = entry.key;
+                          final items = entry.value;
 
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 8,
-                                        ),
-                                        child: Text(
-                                          DateFormat('dd/MMM/yyyy')
-                                              .format(DateTime.parse(date)),
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF2E3192),
-                                          ),
-                                        ),
-                                      ),
-                                      ...items.map((item) {
-                                        if (!_viewedIds.contains(item.id)) {
-                                          _viewedIds.add(item.id);
-                                          _markAsViewed(item.id);
-                                        }
-
-                                        return GestureDetector(
-                                          onTap: () =>
-                                              _navigateToModule(item),
-                                          child: Card(
-                                            margin: const EdgeInsets.only(
-                                                bottom: 12),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            elevation: 2,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(12),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Expanded(
-                                                        child: Text(
-                                                          item.type,
-                                                          style:
-                                                              const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 16,
-                                                            color: Color(
-                                                                0xFF2E3192),
-                                                          ),
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        item.moduleType,
-                                                        style: const TextStyle(
-                                                          fontSize: 13,
-                                                          color: Colors.black54,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    item.title,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    item.subtitle,
-                                                    style: const TextStyle(
-                                                      fontSize: 13,
-                                                      color: Colors.grey,
-                                                    ),
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ],
-                                  );
-                                }).toList(),
-                                if (_nextFetchDate != null)
-                                  Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: _fetchingMore
-                                        ? const Center(
-                                            child:
-                                                CircularProgressIndicator(),
-                                          )
-                                        : ElevatedButton(
-                                            onPressed: () =>
-                                                _fetchNotifications(
-                                                    loadMore: true),
-                                            child: const Text(
-                                              "View Past Notifications",
-                                            ),
-                                          ),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                child: Text(
+                                  DateFormat(
+                                    'dd/MMM/yyyy',
+                                  ).format(DateTime.parse(date)),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2E3192),
                                   ),
-                              ],
-                            ),
+                                ),
+                              ),
+                              ...items.map((item) {
+                                if (!_viewedIds.contains(item.id)) {
+                                  _viewedIds.add(item.id);
+                                  _markAsViewed(item.id);
+                                }
+
+                                return GestureDetector(
+                                  onTap: () => _navigateToModule(item),
+                                  child: Card(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    elevation: 2,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  item.type,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Color(0xFF2E3192),
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Text(
+                                                item.moduleType,
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            item.title,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            item.subtitle,
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          );
+                        }).toList(),
+                        if (_nextFetchDate != null)
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: _fetchingMore
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: () =>
+                                        _fetchNotifications(loadMore: true),
+                                    child: const Text(
+                                      "View Past Notifications",
+                                    ),
+                                  ),
+                          ),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -421,7 +407,6 @@ void _navigateToModule(NotificationItem item) {
     );
   }
 }
-
 
 // ----------------- Reply Msg DETAIL PAGE -----------------
 // class TeacherNotificationDetailPage extends StatefulWidget {
@@ -718,12 +703,7 @@ void _navigateToModule(NotificationItem item) {
 //   }
 // }
 
-
-
-
-
 //Old Reply page code
-
 
 // import 'package:flutter/material.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
@@ -849,7 +829,7 @@ void _navigateToModule(NotificationItem item) {
 //       if (token == null) return;
 
 //       final url =
-//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed";
+//           "${AppConfig.baseUrl}/dashboard/viewed";
 
 //       await http.post(
 //         Uri.parse(url),
@@ -895,7 +875,7 @@ void _navigateToModule(NotificationItem item) {
 //       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
 //       final url =
-//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?date=$formattedDate";
+//           "${AppConfig.baseUrl}/dashboard/daily-notifications?date=$formattedDate";
 
 //       final response = await http.get(
 //         Uri.parse(url),
@@ -1101,7 +1081,7 @@ void _navigateToModule(NotificationItem item) {
 //                                         // ),
 //                                         const SizedBox(height: 4),
 //                                         Text(
-//                                           item.title, 
+//                                           item.title,
 //                                           style: const TextStyle(
 //                                             fontWeight: FontWeight.bold,
 //                                             fontSize: 14,

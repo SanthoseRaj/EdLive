@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:school_app/config/config.dart';
 import 'package:school_app/models/teacher_notification_reply_model.dart';
 
 class NotificationService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  String get baseUrl => AppConfig.baseUrl;
 
   // Fetch replies for a specific notification
   Future<List<NotificationReply>> fetchReplies({
@@ -42,7 +42,8 @@ class NotificationService {
         }
       } else {
         throw Exception(
-            "Error ${response.statusCode}: ${response.reasonPhrase}");
+          "Error ${response.statusCode}: ${response.reasonPhrase}",
+        );
       }
     } catch (e) {
       throw Exception("Something went wrong: $e");
@@ -71,10 +72,7 @@ class NotificationService {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",
         },
-        body: json.encode({
-          "item_type": itemType,
-          "message_text": message,
-        }),
+        body: json.encode({"item_type": itemType, "message_text": message}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -86,7 +84,8 @@ class NotificationService {
         }
       } else {
         throw Exception(
-            "Error ${response.statusCode}: ${response.reasonPhrase}");
+          "Error ${response.statusCode}: ${response.reasonPhrase}",
+        );
       }
     } catch (e) {
       throw Exception("Something went wrong: $e");

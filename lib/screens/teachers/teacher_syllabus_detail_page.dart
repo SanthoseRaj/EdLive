@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:school_app/config/config.dart';
 import 'package:school_app/widgets/teacher_app_bar.dart';
 import 'teacher_menu_drawer.dart';
 import '../../services/teacher_syllabus_service_page2.dart';
@@ -9,7 +10,7 @@ class SyllabusDetailPage extends StatefulWidget {
   final int classId;
   final int subjectId;
   final String subject;
-  final String academicYear;
+  final String? academicYear;
 
   const SyllabusDetailPage({
     super.key,
@@ -17,8 +18,12 @@ class SyllabusDetailPage extends StatefulWidget {
     required this.classId,
     required this.subjectId,
     required this.subject,
-    this.academicYear = "2025-2026",
+    this.academicYear,
   });
+
+  String get effectiveAcademicYear => academicYear?.trim().isNotEmpty == true
+      ? academicYear!.trim()
+      : AppConfig.academicYear;
 
   @override
   State<SyllabusDetailPage> createState() => _SyllabusDetailPageState();
@@ -42,7 +47,7 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
     syllabusFuture = syllabusService.fetchSyllabus(
       widget.classId,
       widget.subjectId,
-      widget.academicYear,
+      academicYear: widget.effectiveAcademicYear,
     );
   }
 
@@ -404,7 +409,7 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
                             syllabusFuture = syllabusService.fetchSyllabus(
                               widget.classId,
                               widget.subjectId,
-                              widget.academicYear,
+                              academicYear: widget.effectiveAcademicYear,
                             );
                             _resetForm();
                           });

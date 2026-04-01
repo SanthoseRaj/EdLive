@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/exam_result_detail_model.dart';
 
 class TeacherExamResultDetailService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
+  String get baseUrl => AppConfig.serverOrigin;
 
   Future<ExamResultData?> fetchStudentExamResults(
     int studentId, {

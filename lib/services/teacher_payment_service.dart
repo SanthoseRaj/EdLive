@@ -3,15 +3,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/teacher_payment_model.dart';
 
 class PaymentService {
-  static const String _baseUrl =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  static String get _baseUrl => AppConfig.serverOrigin;
 
   static Future<List<PaymentAssignment>> fetchPaymentAssignments({
     required List<int> classIds,
-    required String academicYear,
+    String? academicYear,
   }) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -21,35 +21,33 @@ class PaymentService {
     }
 
     final classIdsParam = classIds.join(',');
-    final url =
-        Uri.parse('$_baseUrl/api/payments/assignments?class_ids=$classIdsParam&academic_year=$academicYear');
+    final effectiveAcademicYear = academicYear?.trim().isNotEmpty == true
+        ? academicYear!.trim()
+        : AppConfig.academicYear;
+    final url = Uri.parse(
+      '$_baseUrl/api/payments/assignments?class_ids=$classIdsParam&academic_year=$effectiveAcademicYear',
+    );
 
     final response = await http.get(
       url,
-      headers: {
-        'accept': 'application/json',
-        
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
       final jsonBody = json.decode(response.body);
       final List<dynamic> data = jsonBody['data'];
 
-      return data
-          .map((item) => PaymentAssignment.fromJson(item))
-          .toList();
+      return data.map((item) => PaymentAssignment.fromJson(item)).toList();
     } else {
-      throw Exception('Failed to load payment assignments (${response.statusCode})');
+      throw Exception(
+        'Failed to load payment assignments (${response.statusCode})',
+      );
     }
   }
 }
 
-
 class TeacherClassService {
-  static const String _baseUrl =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  static String get _baseUrl => AppConfig.serverOrigin;
 
   static Future<List<TeacherClass>> fetchTeacherClasses() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -61,10 +59,7 @@ class TeacherClassService {
 
     final response = await http.get(
       url,
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {

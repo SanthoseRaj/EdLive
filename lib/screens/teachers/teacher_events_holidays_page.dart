@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:school_app/config/config.dart';
 
 import 'package:school_app/widgets/teacher_app_bar.dart';
 import 'teacher_menu_drawer.dart';
@@ -93,8 +94,7 @@ class _TeacherEventsHolidaysPageState extends State<TeacherEventsHolidaysPage> {
     int month,
   ) async {
     try {
-      final url =
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/events-holidays/$year/$month';
+      final url = '${AppConfig.baseUrl}/events-holidays/$year/$month';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode != 200) {

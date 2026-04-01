@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/exam_result_model.dart';
 import '../models/exam_result_detail_model.dart';
 
 class ExamResultService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
+  String get baseUrl => AppConfig.serverOrigin;
 
   Future<int?> saveExamResult(ExamResult result, {int? resultId}) async {
     final prefs = await SharedPreferences.getInstance();

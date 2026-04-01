@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class DashboardService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  static String get baseUrl => AppConfig.baseUrl;
 
   static Future<bool> markItemViewed(String itemType, int itemId) async {
     try {
@@ -18,10 +18,7 @@ class DashboardService {
           'Authorization': 'Bearer $token',
           'accept': 'application/json',
         },
-        body: jsonEncode({
-          "item_type": itemType,
-          "item_id": itemId,
-        }),
+        body: jsonEncode({"item_type": itemType, "item_id": itemId}),
       );
 
       if (response.statusCode == 200) {

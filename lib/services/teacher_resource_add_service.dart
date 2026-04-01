@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class TeacherResourceAddService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/resources";
+  static String get baseUrl => '${AppConfig.baseUrl}/resources';
 
   static Future<bool> addResource({
     required String title,

@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:school_app/models/exam_type_model.dart';
 import 'package:school_app/services/exam_type_service.dart';
+import 'package:school_app/config/config.dart';
 
 class AnnounceClassTestPage extends StatefulWidget {
   final int? examId;
@@ -83,9 +84,7 @@ class _AnnounceClassTestPageState extends State<AnnounceClassTestPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
 
-    final url = Uri.parse(
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/$id',
-    );
+    final url = Uri.parse('${AppConfig.baseUrl}/exams/$id');
 
     try {
       final response = await http.get(
@@ -452,11 +451,9 @@ class _AnnounceClassTestPageState extends State<AnnounceClassTestPage> {
 
                         final url = _isEditMode
                             ? Uri.parse(
-                                'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/${widget.examId}',
+                                '${AppConfig.baseUrl}/exams/${widget.examId}',
                               )
-                            : Uri.parse(
-                                'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams',
-                              );
+                            : Uri.parse('${AppConfig.baseUrl}/exams');
 
                         final headers = {
                           'Content-Type': 'application/json',

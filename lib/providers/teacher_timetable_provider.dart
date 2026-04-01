@@ -3,13 +3,18 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/teacher_period_model.dart';
+import 'package:school_app/config/config.dart';
 
 class TimetableEntry {
   final String className;
   final String subject;
   final Map<String, int?> periodIds;
 
-  TimetableEntry({required this.className, required this.subject, required this.periodIds});
+  TimetableEntry({
+    required this.className,
+    required this.subject,
+    required this.periodIds,
+  });
 
   factory TimetableEntry.fromJson(Map<String, dynamic> json) {
     return TimetableEntry(
@@ -33,7 +38,14 @@ class TimetableProvider with ChangeNotifier {
   bool loading = false;
   int selectedDayIndex = 0;
 
-  final List<String> weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  final List<String> weekdays = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
 
   Future<void> loadAll() async {
     loading = true;
@@ -47,7 +59,7 @@ class TimetableProvider with ChangeNotifier {
   }
 
   Future<void> fetchPeriods() async {
-    final url = Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/periods');
+    final url = Uri.parse('${AppConfig.baseUrl}/master/periods');
     final res = await http.get(url);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as List;
@@ -58,11 +70,16 @@ class TimetableProvider with ChangeNotifier {
   Future<void> fetchTimetable() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
-    final url = Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/timetable/2024-2025');
-    final res = await http.get(url, headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    });
+    final url = Uri.parse(
+      '${AppConfig.baseUrl}/staff/staff/timetable/${AppConfig.academicYear}',
+    );
+    final res = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as List;
       entries = data.map((e) => TimetableEntry.fromJson(e)).toList();

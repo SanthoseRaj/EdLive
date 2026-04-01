@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/exam_type_model.dart';
 
 class ExamTypeService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/types";
+  static String get baseUrl => '${AppConfig.baseUrl}/exams/types';
 
   Future<List<ExamType>> fetchExamTypes() async {
     final prefs = await SharedPreferences.getInstance();
@@ -13,10 +13,7 @@ class ExamTypeService {
 
     final response = await http.get(
       Uri.parse(baseUrl),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Accept": "application/json",
-      },
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
     );
 
     if (response.statusCode == 200) {

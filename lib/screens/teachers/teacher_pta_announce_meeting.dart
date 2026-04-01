@@ -6,6 +6,7 @@ import 'package:school_app/widgets/teacher_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:school_app/models/class_section.dart';
 import 'package:school_app/services/class_section_service.dart';
+import 'package:school_app/config/config.dart';
 
 class AnnounceMeetingPage extends StatefulWidget {
   const AnnounceMeetingPage({Key? key}) : super(key: key);
@@ -62,9 +63,7 @@ class _AnnounceMeetingPageState extends State<AnnounceMeetingPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
-      final url = Uri.parse(
-        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/pta/announce",
-      );
+      final url = Uri.parse("${AppConfig.baseUrl}/pta/announce");
 
       // Determine selected channels
       List<String> channels = [];
@@ -276,10 +275,9 @@ class _AnnounceMeetingPageState extends State<AnnounceMeetingPage> {
                           onPressed: _pickTime,
                         ),
                       ),
-                   controller: TextEditingController(
-  text: _formatTime(selectedTime),
-),
-
+                      controller: TextEditingController(
+                        text: _formatTime(selectedTime),
+                      ),
                     ),
                   ),
                 ],
@@ -395,14 +393,12 @@ class _AnnounceMeetingPageState extends State<AnnounceMeetingPage> {
     return months[month];
   }
 
-
   String _formatTime(TimeOfDay time) {
-  final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-  final minute = time.minute.toString().padLeft(2, '0');
-  final period = time.period == DayPeriod.am ? 'AM' : 'PM';
-  return '$hour:$minute $period';
-}
-
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
 
   Future<void> _pickDate() async {
     DateTime? date = await showDatePicker(
@@ -455,9 +451,7 @@ class _AnnounceMeetingPageState extends State<AnnounceMeetingPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
-      final url = Uri.parse(
-        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/pta/meetings",
-      );
+      final url = Uri.parse("${AppConfig.baseUrl}/pta/meetings");
 
       final body = jsonEncode({
         "title": subjectController.text,

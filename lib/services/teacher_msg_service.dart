@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 
 class MessageService {
   static Future<bool> sendMessage({
@@ -11,14 +12,15 @@ class MessageService {
     DateTime? meetingDate,
     required List<String> channels, // ['whatsapp','sms','email']
   }) async {
-    final url = Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/messages');
+    final url = Uri.parse('${AppConfig.baseUrl}/messages');
 
     final body = {
       "student_id": studentId,
       "message_text": messageText,
       "is_appreciation": isAppreciation,
       "is_meeting_request": isMeetingRequest,
-      "meeting_date": meetingDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      "meeting_date":
+          meetingDate?.toIso8601String() ?? DateTime.now().toIso8601String(),
       "channels": channels,
     };
 

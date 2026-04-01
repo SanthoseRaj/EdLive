@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/teacher_resource_class_model.dart';
 
 class TeacherResourceService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  static String get baseUrl => AppConfig.baseUrl;
 
   /// 🔹 Fetch teacher classes
   static Future<List<TeacherClassModel>> fetchTeacherClasses() async {
@@ -18,10 +18,7 @@ class TeacherResourceService {
 
     final response = await http.get(
       Uri.parse("$baseUrl/resources/classes"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "accept": "application/json",
-      },
+      headers: {"Authorization": "Bearer $token", "accept": "application/json"},
     );
 
     if (response.statusCode == 200) {

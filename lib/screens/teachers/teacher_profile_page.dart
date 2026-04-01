@@ -238,8 +238,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage>
         return;
       }
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/Staff/${widget.staffId}";
+      final url = "${AppConfig.baseUrl}/staff/Staff/${widget.staffId}";
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -307,7 +306,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage>
                       : (teacherData?['profile_image'] != null &&
                             teacherData!['profile_image'].toString().isNotEmpty)
                       ? NetworkImage(
-                          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443${teacherData!['profile_image']}?v=${DateTime.now().millisecondsSinceEpoch}",
+                          "${AppConfig.serverOrigin}${teacherData!['profile_image']}?v=${DateTime.now().millisecondsSinceEpoch}",
                         )
                       : null,
                   child:

@@ -9,7 +9,7 @@
 //     final token = prefs.getString('auth_token') ?? '';
 
 //     final url = Uri.parse(
-//       'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/stats?classId=$classId&academicYear=$academicYear',
+//       '${AppConfig.baseUrl}/co-curricular/stats?classId=$classId&academicYear=$academicYear',
 //     );
 
 //     final response = await http.get(url, headers: {

@@ -60,7 +60,7 @@
 //     if (token == null) return;
 
 //     final url = Uri.parse(
-//         "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/counts");
+//         "${AppConfig.baseUrl}/dashboard/counts");
 
 //     try {
 //       final res = await http.get(url, headers: {
@@ -84,7 +84,7 @@
 //     if (token == null) return;
 
 //     final url = Uri.parse(
-//         "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed");
+//         "${AppConfig.baseUrl}/dashboard/viewed");
 
 //     try {
 //       final res = await http.post(

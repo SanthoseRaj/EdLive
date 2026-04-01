@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/student_syllabus_model.dart';
 
 class SyllabusService {
-  final String baseUrl = "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  String get baseUrl => AppConfig.baseUrl;
 
   Future<List<SyllabusSubject>> fetchSyllabusSubjects(int classId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -12,10 +13,7 @@ class SyllabusService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/syllabus/subjects/$classId'),
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {

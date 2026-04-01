@@ -8,7 +8,7 @@ import 'dart:convert';
 
 import '../../models/exam_type_model.dart';
 import '../../services/exam_type_service.dart';
-
+import 'package:school_app/config/config.dart';
 
 final ValueNotifier<String> selectedTerm = ValueNotifier<String>("Final");
 
@@ -24,90 +24,92 @@ class _StudentReportPageState extends State<StudentReportPage> {
   List<Map<String, dynamic>> examRows = [];
 
   List<ExamType> examTypes = [];
-ExamType? selectedExamType;
-
+  ExamType? selectedExamType;
 
   String grade = '';
   String averageScore = '';
   String classRank = '';
 
-
   String getGradeFromScore(double score) {
-  if (score >= 95) return "A+";
-  if (score >= 90) return "A";
-  if (score >= 85) return "B+";
-  if (score >= 80) return "B";
-  if (score >= 75) return "C+";
-  if (score >= 70) return "C";
-  if (score >= 65) return "D+";
-  if (score >= 60) return "D";
-  return "F";
-}
-
-
- @override
-void initState() {
-  super.initState();
-  fetchExamTypes();
-}
-
-Future<void> fetchExamTypes() async {
-  try {
-    final types = await ExamTypeService().fetchExamTypes();
-    setState(() {
-      examTypes = types;
-      if (types.isNotEmpty) {
-        selectedExamType = types.first;
-        fetchExamResults(); // fetch results for default selected exam
-      }
-    });
-  } catch (e) {
-    debugPrint("Error fetching exam types: $e");
+    if (score >= 95) return "A+";
+    if (score >= 90) return "A";
+    if (score >= 85) return "B+";
+    if (score >= 80) return "B";
+    if (score >= 75) return "C+";
+    if (score >= 70) return "C";
+    if (score >= 65) return "D+";
+    if (score >= 60) return "D";
+    return "F";
   }
-}
 
+  @override
+  void initState() {
+    super.initState();
+    fetchExamTypes();
+  }
+
+  Future<void> fetchExamTypes() async {
+    try {
+      final types = await ExamTypeService().fetchExamTypes();
+      setState(() {
+        examTypes = types;
+        if (types.isNotEmpty) {
+          selectedExamType = types.first;
+          fetchExamResults(); // fetch results for default selected exam
+        }
+      });
+    } catch (e) {
+      debugPrint("Error fetching exam types: $e");
+    }
+  }
 
   Future<void> fetchExamResults() async {
-  if (selectedExamType == null) return;
+    if (selectedExamType == null) return;
 
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('auth_token') ?? '';
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
 
-  final url = Uri.parse(
-    'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/results/student/${widget.studentId}?examTypeId=${selectedExamType!.id}',
-  );
+    final url = Uri.parse(
+      '${AppConfig.baseUrl}/exams/results/student/${widget.studentId}?examTypeId=${selectedExamType!.id}',
+    );
 
-  final response = await http.get(
-    url,
-    headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
-  );
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    if (data['success'] == true) {
-      final examResults = data['data']['examResults'] as List;
-      final termResults = data['data']['termResults'] as List;
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
+        final examResults = data['data']['examResults'] as List;
+        final termResults = data['data']['termResults'] as List;
 
-   setState(() {
-  examRows = examResults
-      .map((e) => {
-            'subject': e['subject'] ?? e['exam_title'] ?? '',
-            'marks': (e['marks'] ?? '').toString(),
-          })
-      .toList();
+        setState(() {
+          examRows = examResults
+              .map(
+                (e) => {
+                  'subject': e['subject'] ?? e['exam_title'] ?? '',
+                  'marks': (e['marks'] ?? '').toString(),
+                },
+              )
+              .toList();
 
-  if (termResults.isNotEmpty) {
-    final avg = double.tryParse(termResults[0]['average_percentage'].toString()) ?? 0.0;
-    averageScore = avg.toStringAsFixed(2); // ✅ formatted to 2 decimals
-    grade = getGradeFromScore(avg); // ✅ derive grade based on average
-    classRank = termResults[0]['class_rank'].toString();
+          if (termResults.isNotEmpty) {
+            final avg =
+                double.tryParse(
+                  termResults[0]['average_percentage'].toString(),
+                ) ??
+                0.0;
+            averageScore = avg.toStringAsFixed(2); // ✅ formatted to 2 decimals
+            grade = getGradeFromScore(avg); // ✅ derive grade based on average
+            classRank = termResults[0]['class_rank'].toString();
+          }
+        });
+      }
+    } else {
+      debugPrint('Failed to fetch exam results: ${response.statusCode}');
+    }
   }
-});
-  }
-  } else {
-    debugPrint('Failed to fetch exam results: ${response.statusCode}');
-  }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -229,26 +231,32 @@ Future<void> fetchExamTypes() async {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: DropdownButton<ExamType>(
-  value: selectedExamType,
-  underline: const SizedBox(),
-  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF808080)),
-  style: const TextStyle(color: Color(0xFF4D4D4D), fontSize: 14),
-  items: examTypes.map((exam) {
-    return DropdownMenuItem(
-      value: exam,
-      child: Text(exam.examType),
-    );
-  }).toList(),
-  onChanged: (newValue) {
-    if (newValue != null) {
-      setState(() {
-        selectedExamType = newValue;
-        fetchExamResults();
-      });
-    }
-  },
-),
-  );
+                                        value: selectedExamType,
+                                        underline: const SizedBox(),
+                                        icon: const Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Color(0xFF808080),
+                                        ),
+                                        style: const TextStyle(
+                                          color: Color(0xFF4D4D4D),
+                                          fontSize: 14,
+                                        ),
+                                        items: examTypes.map((exam) {
+                                          return DropdownMenuItem(
+                                            value: exam,
+                                            child: Text(exam.examType),
+                                          );
+                                        }).toList(),
+                                        onChanged: (newValue) {
+                                          if (newValue != null) {
+                                            setState(() {
+                                              selectedExamType = newValue;
+                                              fetchExamResults();
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    );
                                   },
                                 ),
                               ],

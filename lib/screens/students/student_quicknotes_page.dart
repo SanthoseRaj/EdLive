@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:school_app/config/config.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
 import 'package:school_app/screens/students/student_menu_drawer.dart';
 import 'package:school_app/screens/students/student_quicknotes_add_page.dart';
@@ -525,8 +526,7 @@ class StudentStickyNote {
 // ----------------------- SERVICE -----------------------
 
 class StudentQuickNoteService {
-  static const String baseUrl =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  static String get baseUrl => AppConfig.serverOrigin;
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -588,20 +588,13 @@ class StudentQuickNoteService {
   }
 }
 
-
-
-
-
-
-//Old Page Code (open link) 
-
+//Old Page Code (open link)
 
 // import 'dart:convert';
 // import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
 // import 'package:url_launcher/url_launcher.dart';
-
 
 // import 'package:school_app/models/teacher_class_student.dart';
 // import 'package:school_app/screens/students/student_menu_drawer.dart';
@@ -635,7 +628,7 @@ class StudentQuickNoteService {
 //       final classId = prefs.getInt("class_id") ?? 0;
 
 //       final url =
-//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes?classId=$classId&studentId=$studentId";
+//           "${AppConfig.baseUrl}/quicknotes?classId=$classId&studentId=$studentId";
 
 //       final response = await http.get(
 //         Uri.parse(url),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class CoCurricularActivity {
   final int id;
@@ -27,7 +28,8 @@ class CoCurricularActivity {
 
 class CoCurricularService {
   static Future<List<CoCurricularActivity>> fetchActivitiesByCategory(
-      int categoryId) async {
+    int categoryId,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
 
@@ -36,22 +38,18 @@ class CoCurricularService {
     }
 
     final url = Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/co-curricular/activities?categoryId=$categoryId');
+      '${AppConfig.baseUrl}/co-curricular/activities?categoryId=$categoryId',
+    );
 
     final response = await http.get(
       url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
       if (body is List) {
-        return body
-            .map((e) => CoCurricularActivity.fromJson(e))
-            .toList();
+        return body.map((e) => CoCurricularActivity.fromJson(e)).toList();
       } else {
         throw Exception('Invalid response format: expected a list');
       }

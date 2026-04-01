@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/teacher_attendance_year.dart';
-
+import 'package:school_app/config/config.dart';
 
 class AttendanceProvider with ChangeNotifier {
   List<TeacherDailyAttendance> _attendanceList = [];
@@ -25,11 +25,10 @@ class AttendanceProvider with ChangeNotifier {
       final token = prefs.getString('auth_token') ?? '';
 
       final response = await http.get(
-        Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/teacher?classId=$classId&date=$date'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'accept': '*/*',
-        },
+        Uri.parse(
+          '${AppConfig.baseUrl}/attendance/teacher?classId=$classId&date=$date',
+        ),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
       );
 
       if (response.statusCode == 200) {

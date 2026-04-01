@@ -2,13 +2,14 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
-import '../models/teacher_todo_model.dart';
+import 'package:school_app/config/config.dart';
 
 class TodoService {
-  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/todos';
+  String get baseUrl => '${AppConfig.baseUrl}/todos';
 
   // PUT /api/todos/{id} with multipart/form-data
-  Future<void> updateTodo(String id, {
+  Future<void> updateTodo(
+    String id, {
     required String title,
     required String description,
     required String date,
@@ -35,11 +36,13 @@ class TodoService {
     if (file != null) {
       final mimeType = lookupMimeType(file.path)?.split('/');
       if (mimeType != null && mimeType.length == 2) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'todoFileUpload',
-          file.path,
-          contentType: MediaType(mimeType[0], mimeType[1]),
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'todoFileUpload',
+            file.path,
+            contentType: MediaType(mimeType[0], mimeType[1]),
+          ),
+        );
       }
     }
 

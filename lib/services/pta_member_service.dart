@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/pta_member_model.dart';
 
 class PTAMemberService {
-  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  static String get baseUrl => AppConfig.serverOrigin;
 
   Future<List<PTAMember>> getMembers() async {
     final prefs = await SharedPreferences.getInstance();
@@ -12,10 +13,7 @@ class PTAMemberService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/api/pta/members'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {

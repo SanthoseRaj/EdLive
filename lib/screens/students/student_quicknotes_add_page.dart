@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:school_app/screens/students/student_menu_drawer.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
+import 'package:school_app/config/config.dart';
 
 class StudentAddQuickNotesPage extends StatefulWidget {
   const StudentAddQuickNotesPage({super.key});
@@ -30,9 +31,9 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
     final posY = int.tryParse(posYController.text) ?? 0;
 
     if (note.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a note")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter a note")));
       return;
     }
 
@@ -53,7 +54,7 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
 
       // ✅ Correct API Endpoint
       final url =
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/stickynotes/$studentId?user_type=Student';
+          '${AppConfig.baseUrl}/stickynotes/$studentId?user_type=Student';
 
       final body = jsonEncode({
         "notes": note,
@@ -85,16 +86,15 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              "Failed (${response.statusCode}): ${response.body}",
-            ),
+            content: Text("Failed (${response.statusCode}): ${response.body}"),
           ),
         );
       }
     } catch (e) {
       debugPrint("❌ Error adding sticky note: $e");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       setState(() => isLoading = false);
     }
@@ -168,8 +168,9 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
                                   maxLines: null,
                                   expands: true,
                                   textAlignVertical: TextAlignVertical.top,
-                                  decoration:
-                                      _inputDecoration("Enter your note"),
+                                  decoration: _inputDecoration(
+                                    "Enter your note",
+                                  ),
                                 ),
                               ),
 
@@ -183,15 +184,21 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
                                   const Text(
                                     "Color",
                                     style: TextStyle(
-                                        fontSize: 20, color: Colors.black87),
+                                      fontSize: 20,
+                                      color: Colors.black87,
+                                    ),
                                   ),
                                   Container(
                                     width: 150,
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 4),
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                          color: Colors.black, width: 1),
+                                        color: Colors.black,
+                                        width: 1,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: DropdownButton<String>(
@@ -200,26 +207,37 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
                                       underline: const SizedBox(),
                                       items: const [
                                         DropdownMenuItem(
-                                            value: 'yellow',
-                                            child: Text('Yellow')),
+                                          value: 'yellow',
+                                          child: Text('Yellow'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'pink', child: Text('Pink')),
+                                          value: 'pink',
+                                          child: Text('Pink'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'blue', child: Text('Blue')),
+                                          value: 'blue',
+                                          child: Text('Blue'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'green',
-                                            child: Text('Green')),
+                                          value: 'green',
+                                          child: Text('Green'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'orange',
-                                            child: Text('Orange')),
+                                          value: 'orange',
+                                          child: Text('Orange'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'purple',
-                                            child: Text('Purple')),
+                                          value: 'purple',
+                                          child: Text('Purple'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'red', child: Text('Red')),
+                                          value: 'red',
+                                          child: Text('Red'),
+                                        ),
                                         DropdownMenuItem(
-                                            value: 'brown',
-                                            child: Text('Brown')),
+                                          value: 'brown',
+                                          child: Text('Brown'),
+                                        ),
                                       ],
                                       onChanged: (val) {
                                         setState(() => selectedColor = val!);
@@ -276,8 +294,7 @@ class _StudentAddQuickNotesPageState extends State<StudentAddQuickNotesPage> {
       hintText: label,
       filled: true,
       fillColor: const Color(0xFFF5F5F5),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(4),
         borderSide: BorderSide.none,

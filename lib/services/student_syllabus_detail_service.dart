@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/student_syllabus_model.dart';
 import '../models/student_syllabus_detail_model.dart';
 
 class SyllabusService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  String get baseUrl => AppConfig.baseUrl;
 
   Future<List<SyllabusSubject>> fetchSyllabusSubjects(int classId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -14,10 +14,7 @@ class SyllabusService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/syllabus/subjects/$classId'),
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -29,16 +26,19 @@ class SyllabusService {
   }
 
   Future<List<SyllabusDetail>> fetchSyllabusDetail(
-      int classId, int subjectId, String academicYear) async {
+    int classId,
+    int subjectId, {
+    String? academicYear,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
+    final effectiveAcademicYear = academicYear?.trim().isNotEmpty == true
+        ? academicYear!.trim()
+        : AppConfig.academicYear;
 
     final response = await http.get(
-      Uri.parse('$baseUrl/syllabus/$classId/$subjectId/$academicYear'),
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      Uri.parse('$baseUrl/syllabus/$classId/$subjectId/$effectiveAcademicYear'),
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {

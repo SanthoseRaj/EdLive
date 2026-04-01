@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class WeekFoodTab extends StatefulWidget {
   const WeekFoodTab({super.key});
@@ -49,8 +50,7 @@ class _WeekFoodTabState extends State<WeekFoodTab> {
       final formattedDate =
           "${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')}";
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/weekly-menu?date=$formattedDate";
+      final url = "${AppConfig.baseUrl}/food/weekly-menu?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -92,8 +92,7 @@ class _WeekFoodTabState extends State<WeekFoodTab> {
       await Future.wait(
         weekDates.map((date) async {
           final dateKey = DateFormat("yyyy-MM-dd").format(date);
-          final url =
-              "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$dateKey";
+          final url = "${AppConfig.baseUrl}/food/schedule/$studentId/$dateKey";
 
           try {
             final response = await http.get(
@@ -415,8 +414,7 @@ class _WeekFoodTabState extends State<WeekFoodTab> {
               : null,
         };
 
-        final url =
-            "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule";
+        final url = "${AppConfig.baseUrl}/food/schedule";
 
         final response = await http.post(
           Uri.parse(url),

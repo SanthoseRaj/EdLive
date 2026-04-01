@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class AppConfig {
   static const String defaultServerOrigin =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com';
+      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
   static const String defaultApiBaseUrl = '$defaultServerOrigin/api';
   static const String localProxyOrigin = 'http://127.0.0.1:8081';
 
@@ -39,20 +39,46 @@ class AppConfig {
   static const String userTypeKey = 'usertype';
   static const String userIdKey = 'userId';
   static const String academicYearKey = 'academicYear';
+  static const String _academicYearOverride = String.fromEnvironment(
+    'ACADEMIC_YEAR',
+    defaultValue: '',
+  );
 
   // ✅ GLOBAL ACADEMIC YEAR
-  static String academicYear = '';
+  static String _academicYear = '';
 
-  static void setAcademicYear() {
-    final now = DateTime.now();
-
-    if (now.month >= 6) {
-      // June to Dec
-      academicYear = '${now.year}-${now.year + 1}';
-    } else {
-      // Jan to May
-      academicYear = '${now.year - 1}-${now.year}';
+  static String get academicYear {
+    if (_academicYearOverride.isNotEmpty) {
+      return _academicYearOverride;
     }
+
+    if (_academicYear.isEmpty) {
+      _academicYear = _calculateAcademicYear(DateTime.now());
+    }
+
+    return _academicYear;
+  }
+
+  static set academicYear(String value) {
+    _academicYear = value.trim();
+  }
+
+  static void setAcademicYear([String? value]) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isNotEmpty) {
+      academicYear = trimmed;
+      return;
+    }
+
+    academicYear = _calculateAcademicYear(DateTime.now());
+  }
+
+  static String _calculateAcademicYear(DateTime now) {
+    if (now.month >= 6) {
+      return '${now.year}-${now.year + 1}';
+    }
+
+    return '${now.year - 1}-${now.year}';
   }
 
   // ✅ API URI BUILDER

@@ -22,6 +22,7 @@ import 'package:school_app/services/library_member_status_service.dart';
 
 import '../../../widgets/teacher_app_bar.dart';
 import '../teachers/teacher_menu_drawer.dart';
+import 'package:school_app/config/config.dart';
 
 class AddLibraryBookPage extends StatefulWidget {
   const AddLibraryBookPage({super.key});
@@ -177,9 +178,7 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
 
     try {
       final response = await http.post(
-        Uri.parse(
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com/api/dashboard/viewed',
-        ),
+        Uri.parse('${AppConfig.baseUrl}/dashboard/viewed'),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',
@@ -264,9 +263,7 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
     final token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/members',
-      ),
+      Uri.parse('${AppConfig.baseUrl}/library/members'),
       headers: {
         'accept': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
@@ -330,9 +327,7 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
       final token = prefs.getString('auth_token');
 
       final response = await http.post(
-        Uri.parse(
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/members',
-        ),
+        Uri.parse('${AppConfig.baseUrl}/library/members'),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',
@@ -939,82 +934,81 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
     );
   }
 
-  
+  Widget _buildAddCopyForm() {
+    final provider = Provider.of<LibraryCopyProvider>(context);
+    final booksProvider = Provider.of<LibraryBooksListProvider>(context);
 
- Widget _buildAddCopyForm() {
-  final provider = Provider.of<LibraryCopyProvider>(context);
-  final booksProvider = Provider.of<LibraryBooksListProvider>(context);
+    // Show loading if books are being fetched
+    if (booksProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-  // Show loading if books are being fetched
-  if (booksProvider.isLoading) {
-    return const Center(child: CircularProgressIndicator());
-  }
-
-  // Show message if no books available
-  if (booksProvider.books.isEmpty) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Text(
-          "No books available. Please add a book first.",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+    // Show message if no books available
+    if (booksProvider.books.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            "No books available. Please add a book first.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
         ),
+      );
+    }
+
+    return Form(
+      key: _formKeyCopy,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DropdownButtonFormField<int>(
+            decoration: InputDecoration(
+              labelText: "Select Book",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            items: booksProvider.books.map((book) {
+              return DropdownMenuItem<int>(
+                value: book["id"],
+                child: Text(book["title"] ?? "Untitled"),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                _bookIdController.text = value.toString();
+              }
+            },
+            validator: (val) {
+              if (val == null) return "Please select a book";
+              return null;
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(_barcodeController, "Barcode"),
+          _buildTextField(_conditionController, "Condition"),
+          const SizedBox(height: 12),
+          provider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ElevatedButton.icon(
+                  onPressed: _submitCopy,
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add Copy"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+        ],
       ),
     );
   }
 
-  return Form(
-    key: _formKeyCopy,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        DropdownButtonFormField<int>(
-          decoration: InputDecoration(
-            labelText: "Select Book",
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          items: booksProvider.books.map((book) {
-            return DropdownMenuItem<int>(
-              value: book["id"],
-              child: Text(book["title"] ?? "Untitled"),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) {
-              _bookIdController.text = value.toString();
-            }
-          },
-          validator: (val) {
-            if (val == null) return "Please select a book";
-            return null;
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildTextField(_barcodeController, "Barcode"),
-        _buildTextField(_conditionController, "Condition"),
-        const SizedBox(height: 12),
-        provider.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : ElevatedButton.icon(
-                onPressed: _submitCopy,
-                icon: const Icon(Icons.add),
-                label: const Text("Add Copy"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-      ],
-    ),
-  );
-}
   Future<void> _pickStartDate() async {
     final pickedDate = await showDatePicker(
       context: context,

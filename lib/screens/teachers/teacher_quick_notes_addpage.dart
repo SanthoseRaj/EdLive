@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:school_app/screens/teachers/teacher_menu_drawer.dart';
 import 'package:school_app/widgets/teacher_app_bar.dart';
+import 'package:school_app/config/config.dart';
 
 class AddStickyNotePage extends StatefulWidget {
   const AddStickyNotePage({super.key});
@@ -52,8 +53,7 @@ class _AddStickyNotePageState extends State<AddStickyNotePage> {
         return;
       }
 
-      final url =
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/stickynotes/$teacherId';
+      final url = '${AppConfig.baseUrl}/stickynotes/$teacherId';
 
       final body = jsonEncode({
         "notes": note,
@@ -178,43 +178,77 @@ class _AddStickyNotePageState extends State<AddStickyNotePage> {
 
                               // 🎨 Color Dropdown
                               // 🎨 Color Dropdown (border only for dropdown)
-                             // 🎨 Color Dropdown (border only for dropdown)
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    const Text(
-      "Color",
-      style: TextStyle(fontSize: 20, color: Colors.black87),
-    ),
-    Container(
-      width: 150,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: DropdownButton<String>(
-        value: selectedColor,
-        isExpanded: true,
-        underline: const SizedBox(),
-        items: const [
-          DropdownMenuItem(value: 'yellow', child: Text('Yellow')),
-          DropdownMenuItem(value: 'pink', child: Text('Pink')),
-          DropdownMenuItem(value: 'blue', child: Text('Blue')),
-          DropdownMenuItem(value: 'green', child: Text('Green')),
-          DropdownMenuItem(value: 'orange', child: Text('Orange')),
-          DropdownMenuItem(value: 'purple', child: Text('Purple')),
-          DropdownMenuItem(value: 'red', child: Text('Red')),
-          // DropdownMenuItem(value: 'skyblue', child: Text('Sky Blue')),
-          DropdownMenuItem(value: 'brown', child: Text('Brown')),
-        ],
-        onChanged: (val) {
-          setState(() => selectedColor = val!);
-        },
-      ),
-    ),
-  ],
-),
+                              // 🎨 Color Dropdown (border only for dropdown)
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    "Color",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 150,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.black,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: DropdownButton<String>(
+                                      value: selectedColor,
+                                      isExpanded: true,
+                                      underline: const SizedBox(),
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: 'yellow',
+                                          child: Text('Yellow'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'pink',
+                                          child: Text('Pink'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'blue',
+                                          child: Text('Blue'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'green',
+                                          child: Text('Green'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'orange',
+                                          child: Text('Orange'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'purple',
+                                          child: Text('Purple'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'red',
+                                          child: Text('Red'),
+                                        ),
+                                        // DropdownMenuItem(value: 'skyblue', child: Text('Sky Blue')),
+                                        DropdownMenuItem(
+                                          value: 'brown',
+                                          child: Text('Brown'),
+                                        ),
+                                      ],
+                                      onChanged: (val) {
+                                        setState(() => selectedColor = val!);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
 
                               const SizedBox(height: 16),
 

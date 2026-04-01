@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/student_message_model.dart';
 
 class MessageService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/messages";
+  static String get baseUrl => '${AppConfig.baseUrl}/messages';
 
   static Future<List<StudentMessage>> fetchMessages(int studentId) async {
     final prefs = await SharedPreferences.getInstance();

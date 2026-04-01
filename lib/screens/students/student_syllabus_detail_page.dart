@@ -45,7 +45,7 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
       final newData = await SyllabusService().fetchSyllabusDetail(
         widget.classId,
         widget.subjectId,
-        widget.academicYear,
+        academicYear: widget.academicYear,
       );
 
       // Only update UI if new data differs from current

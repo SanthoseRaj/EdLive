@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:school_app/models/student_payment_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class StudentPaymentService {
-  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api';
+  String get baseUrl => AppConfig.baseUrl;
 
   Future<List<StudentPayment>> fetchStudentPayments(String studentId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -12,10 +13,7 @@ class StudentPaymentService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/payments/student/$studentId'),
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     print("Status Code: ${response.statusCode}");

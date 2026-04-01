@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/teacher_quick_note_model.dart';
 
 class QuickNoteService {
-  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/quicknotes';
+  static String get baseUrl => '${AppConfig.baseUrl}/quicknotes';
 
-  Future<List<QuickNote>> fetchQuickNotes({int? classId, int? studentId}) async {
+  Future<List<QuickNote>> fetchQuickNotes({
+    int? classId,
+    int? studentId,
+  }) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 

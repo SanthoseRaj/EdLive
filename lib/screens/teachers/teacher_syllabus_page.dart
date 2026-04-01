@@ -15,6 +15,7 @@ import 'package:school_app/services/teacher_syllabus_subject_service.dart';
 import 'package:school_app/models/teacher_syllabus_subject_model.dart';
 import '../../models/teacher_syllabus_model.dart';
 import '../../services/teacher_syllabus_service.dart';
+import 'package:school_app/config/config.dart';
 
 class TeacherSyllabusPage extends StatefulWidget {
   const TeacherSyllabusPage({super.key});
@@ -40,8 +41,6 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
   Subject? _selectedAddSubject;
   final termController = TextEditingController();
 
-  // Academic Year dropdown
-  List<String> _academicYears = [];
   String? _selectedAcademicYear;
 
   @override
@@ -50,11 +49,7 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
     _loadClasses();
     _loadTeacherClasses();
 
-    // Generate last 5 academic years
-    final currentYear = DateTime.now().year;
-    _academicYears = List.generate(
-        5, (i) => '${currentYear - i}-${currentYear - i + 1}');
-    _selectedAcademicYear = _academicYears.first;
+    _selectedAcademicYear = AppConfig.academicYear;
   }
 
   Future<bool> _addSyllabus({
@@ -66,8 +61,7 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
 
-    final url = Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/syllabus');
+    final url = Uri.parse('${AppConfig.baseUrl}/syllabus');
     final body = jsonEncode({
       "class_id": classId,
       "subject_id": subjectId,
@@ -88,7 +82,9 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
       if (response.statusCode == 201) {
         return true;
       } else {
-        print('Failed to add syllabus: ${response.statusCode} ${response.body}');
+        print(
+          'Failed to add syllabus: ${response.statusCode} ${response.body}',
+        );
         return false;
       }
     } catch (e) {
@@ -107,8 +103,9 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
       });
     } catch (e) {
       setState(() => _loadingTeacherClasses = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Failed to load teacher classes: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to load teacher classes: $e")),
+      );
     }
   }
 
@@ -123,8 +120,9 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
       if (_selectedClass != null) _loadSubjects(_selectedClass!.id);
     } catch (e) {
       setState(() => _loadingClasses = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Failed to load classes: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to load classes: $e")));
     }
   }
 
@@ -138,8 +136,9 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
       });
     } catch (e) {
       setState(() => _loadingSubjects = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Failed to load subjects: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to load subjects: $e")));
     }
   }
 
@@ -166,8 +165,14 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
                           child: InkWell(
                             onTap: () => Navigator.pop(context),
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                              child: Text("< Back", style: TextStyle(fontSize: 16)),
+                              padding: EdgeInsets.symmetric(
+                                vertical: 4.0,
+                                horizontal: 8.0,
+                              ),
+                              child: Text(
+                                "< Back",
+                                style: TextStyle(fontSize: 16),
+                              ),
                             ),
                           ),
                         ),
@@ -175,7 +180,10 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
 
                       // Title Row
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8,
+                        ),
                         child: Row(
                           children: [
                             Container(
@@ -220,14 +228,17 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
                             child: isAdding
                                 ? _buildAddForm()
                                 : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Class Dropdown in list mode
                                       Container(
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Row(
                                           children: [
@@ -243,33 +254,58 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
                                             Container(
                                               width: 120,
                                               height: 30,
-                                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                border: Border.all(color: Color(0xFF4D4D4D)),
-                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: Color(0xFF4D4D4D),
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
                                               ),
                                               child: DropdownButtonHideUnderline(
-                                                child: DropdownButton<ClassSection>(
-                                                  isExpanded: true,
-                                                  icon: const Icon(Icons.arrow_drop_down,
-                                                      color: Color(0xFF808080)),
-                                                  value: _selectedClass,
-                                                  items: _classSections.map((cls) {
-                                                    return DropdownMenuItem(
-                                                      value: cls,
-                                                      child: Text(
-                                                        cls.fullName,
-                                                        style: const TextStyle(color: Color(0xFF666666)),
-                                                        overflow: TextOverflow.ellipsis,
+                                                child:
+                                                    DropdownButton<
+                                                      ClassSection
+                                                    >(
+                                                      isExpanded: true,
+                                                      icon: const Icon(
+                                                        Icons.arrow_drop_down,
+                                                        color: Color(
+                                                          0xFF808080,
+                                                        ),
                                                       ),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: (val) {
-                                                    if (val == null) return;
-                                                    setState(() => _selectedClass = val);
-                                                    _loadSubjects(val.id);
-                                                  },
-                                                ),
+                                                      value: _selectedClass,
+                                                      items: _classSections.map((
+                                                        cls,
+                                                      ) {
+                                                        return DropdownMenuItem(
+                                                          value: cls,
+                                                          child: Text(
+                                                            cls.fullName,
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Color(
+                                                                    0xFF666666,
+                                                                  ),
+                                                                ),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                      onChanged: (val) {
+                                                        if (val == null) return;
+                                                        setState(
+                                                          () => _selectedClass =
+                                                              val,
+                                                        );
+                                                        _loadSubjects(val.id);
+                                                      },
+                                                    ),
                                               ),
                                             ),
                                           ],
@@ -281,96 +317,158 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
                                       // Subject List
                                       Expanded(
                                         child: _loadingSubjects
-                                            ? const Center(child: CircularProgressIndicator())
+                                            ? const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              )
                                             : ListView.builder(
                                                 itemCount: _subjects.length,
                                                 itemBuilder: (context, index) {
-                                                  final subject = _subjects[index];
+                                                  final subject =
+                                                      _subjects[index];
                                                   return InkWell(
-  onTap: () {
-    if (_selectedClass == null) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => SyllabusDetailPage(
-          classId: _selectedClass!.id,
-          subjectId: subject.id,
-          selectedClass: _selectedClass!.fullName,
-          subject: subject.name,
-        ),
-      ),
-    );
-  },
-  child: Container(
-    margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 6,
-          offset: const Offset(0, 3),
-        ),
-      ],
-      border: Border.all(color: Colors.grey.shade200),
-    ),
-    child: Row(
-      children: [
-        // Icon with colored background
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF29ABE2).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: SvgPicture.asset(
-            'assets/icons/book.svg', // your subject icon
-            height: 22,
-            width: 22,
-            color: const Color(0xFF29ABE2),
-          ),
-        ),
-        const SizedBox(width: 16),
+                                                    onTap: () {
+                                                      if (_selectedClass ==
+                                                          null)
+                                                        return;
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              SyllabusDetailPage(
+                                                                classId:
+                                                                    _selectedClass!
+                                                                        .id,
+                                                                subjectId:
+                                                                    subject.id,
+                                                                selectedClass:
+                                                                    _selectedClass!
+                                                                        .fullName,
+                                                                subject: subject
+                                                                    .name,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    child: Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                            bottom: 12,
+                                                          ),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 16,
+                                                            horizontal: 16,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color:
+                                                                Colors.black12,
+                                                            blurRadius: 6,
+                                                            offset:
+                                                                const Offset(
+                                                                  0,
+                                                                  3,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                        border: Border.all(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade200,
+                                                        ),
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          // Icon with colored background
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  10,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF29ABE2,
+                                                                  ).withOpacity(
+                                                                    0.2,
+                                                                  ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    8,
+                                                                  ),
+                                                            ),
+                                                            child: SvgPicture.asset(
+                                                              'assets/icons/book.svg', // your subject icon
+                                                              height: 22,
+                                                              width: 22,
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF29ABE2,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 16,
+                                                          ),
 
-        // Subject name + subtitle
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                subject.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E3192),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Click to view syllabus',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
+                                                          // Subject name + subtitle
+                                                          Expanded(
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  subject.name,
+                                                                  style: const TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Color(
+                                                                      0xFF2E3192,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 4,
+                                                                ),
+                                                                Text(
+                                                                  'Click to view syllabus',
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .shade600,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
 
-        // Arrow icon
-        SvgPicture.asset(
-          'assets/icons/arrow_right.svg',
-          height: 18,
-          width: 18,
-          color: Colors.grey.shade400,
-        ),
-      ],
-    ),
-  ),
-);
- },
+                                                          // Arrow icon
+                                                          SvgPicture.asset(
+                                                            'assets/icons/arrow_right.svg',
+                                                            height: 18,
+                                                            width: 18,
+                                                            color: Colors
+                                                                .grey
+                                                                .shade400,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               ),
                                       ),
                                     ],
@@ -398,7 +496,10 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                     ),
                   ),
                 ),
@@ -418,76 +519,103 @@ class _TeacherSyllabusPageState extends State<TeacherSyllabusPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Class Dropdown
-          const Text("Select Class", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+          const Text(
+            "Select Class",
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          ),
           const SizedBox(height: 6),
           DropdownButtonFormField<TeacherClass>(
             value: _selectedAddClass,
             isExpanded: true,
             decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
             hint: const Text("Select Class"),
             items: _teacherClasses.map((cls) {
-              return DropdownMenuItem(
-                value: cls,
-                child: Text(cls.fullName),
-              );
+              return DropdownMenuItem(value: cls, child: Text(cls.fullName));
             }).toList(),
             onChanged: (val) => setState(() => _selectedAddClass = val),
           ),
           const SizedBox(height: 16),
 
           // Subject Dropdown
-          const Text("Select Subject", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+          const Text(
+            "Select Subject",
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          ),
           const SizedBox(height: 6),
           DropdownButtonFormField<Subject>(
             value: _selectedAddSubject,
             isExpanded: true,
             decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
             hint: const Text("Select Subject"),
             items: _subjects.map((sub) {
-              return DropdownMenuItem(
-                value: sub,
-                child: Text(sub.name),
-              );
+              return DropdownMenuItem(value: sub, child: Text(sub.name));
             }).toList(),
             onChanged: (val) => setState(() => _selectedAddSubject = val),
           ),
           const SizedBox(height: 16),
 
           // Term
-          const Text("Enter Term", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+          const Text(
+            "Enter Term",
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          ),
           const SizedBox(height: 6),
           TextField(
             controller: termController,
             decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 16),
 
           // Academic Year Dropdown
-        // Academic Year (editable)
-const Text("Academic Year", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-const SizedBox(height: 6),
-TextField(
-  controller: TextEditingController(
-      text: "${DateTime.now().year}-${DateTime.now().year + 1}"), // initial value
-  decoration: InputDecoration(
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-  ),
-  onChanged: (val) {
-    _selectedAcademicYear = val; // update state when edited
-  },
-),
-const SizedBox(height: 16),
-   const SizedBox(height: 16),
+          // Academic Year (editable)
+          const Text(
+            "Academic Year",
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            controller: TextEditingController(
+              text: AppConfig.academicYear,
+            ), // initial value
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+            ),
+            onChanged: (val) {
+              _selectedAcademicYear = val; // update state when edited
+            },
+          ),
+          const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           const Spacer(),
 
@@ -500,9 +628,14 @@ const SizedBox(height: 16),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  child: const Text("Cancel",style:TextStyle( color:Colors.white,)),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -520,7 +653,9 @@ const SizedBox(height: 16),
                       );
                       if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Syllabus added successfully')),
+                          const SnackBar(
+                            content: Text('Syllabus added successfully'),
+                          ),
                         );
                         setState(() {
                           isAdding = false;
@@ -528,7 +663,9 @@ const SizedBox(height: 16),
                         });
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Failed to add syllabus')),
+                          const SnackBar(
+                            content: Text('Failed to add syllabus'),
+                          ),
                         );
                       }
                     }
@@ -536,9 +673,14 @@ const SizedBox(height: 16),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF29ABE2),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  child: const Text("Save",style:TextStyle( color:Colors.white,)),
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],

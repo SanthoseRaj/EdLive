@@ -5,7 +5,7 @@
 
 // class TimetableService {
 //   static const _base =
-//       'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+//       '${AppConfig.serverOrigin}';
 //   static const _endpoint = '/api/student/students/timetable';
 
 //   Future<List<TimetableDay>> fetchTimetable(int academicYear) async {

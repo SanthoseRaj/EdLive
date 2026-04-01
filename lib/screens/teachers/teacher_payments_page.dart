@@ -7,6 +7,7 @@ import 'package:school_app/screens/teachers/teacher_menu_drawer.dart';
 import 'package:school_app/models/teacher_payment_model.dart';
 import 'package:school_app/services/teacher_payment_service.dart';
 import 'package:school_app/providers/teacher_dashboard_provider.dart';
+import 'package:school_app/config/config.dart';
 
 class TeacherPaymentsPage extends StatefulWidget {
   const TeacherPaymentsPage({super.key});
@@ -101,7 +102,7 @@ class _TeacherPaymentsPageState extends State<TeacherPaymentsPage> {
 
       final data = await PaymentService.fetchPaymentAssignments(
         classIds: classIds,
-        academicYear: '2025-2026',
+        academicYear: AppConfig.academicYear,
       );
 
       _tabKeys = List.generate(data.length, (_) => GlobalKey());

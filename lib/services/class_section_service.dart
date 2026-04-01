@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 import '../models/class_section.dart';
 
 class ClassService {
-  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  String get baseUrl => AppConfig.serverOrigin;
 
   Future<List<ClassSection>> fetchClassSections() async {
     final url = Uri.parse('$baseUrl/api/master/classes');

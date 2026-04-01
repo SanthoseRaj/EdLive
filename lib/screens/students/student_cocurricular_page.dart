@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:school_app/config/config.dart';
 import 'package:school_app/screens/students/student_menu_drawer.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -68,11 +69,10 @@ class _StudentActivitiesPageState extends State<StudentActivitiesPage> {
       }
 
       // Use explicit port 443 (HTTPS) - it's correct but we'll ensure URL is properly formatted
-      final url = Uri.https(
-        'schoolmanagement.canadacentral.cloudapp.azure.com',
-        '/api/co-curricular/student-activities',
-        {
-          'studentId': widget.studentId.toString(),
+      final url = AppConfig.apiUri(
+        '/co-curricular/student-activities',
+        queryParameters: {
+          'studentId': widget.studentId,
           'academicYear': widget.academicYear,
         },
       );

@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/teacher_resource_subject_model.dart';
+import 'package:school_app/config/config.dart';
 
 class SubjectResourceService {
-  static const String subjectUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/resources/teacher/subjects";
+  static String get subjectUrl =>
+      "${AppConfig.baseUrl}/resources/teacher/subjects";
 
   static Future<List<TeacherSubjectModel>> fetchTeacherSubjects() async {
     final prefs = await SharedPreferences.getInstance();
@@ -13,10 +14,7 @@ class SubjectResourceService {
 
     final response = await http.get(
       Uri.parse(subjectUrl),
-      headers: {
-        "accept": "application/json",
-        "Authorization": "Bearer $token",
-      },
+      headers: {"accept": "application/json", "Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {

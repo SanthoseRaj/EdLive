@@ -6,6 +6,7 @@ import 'student_syllabus_detail_page.dart';
 import '../../models/student_syllabus_model.dart';
 import '../../services/student_syllabus_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class StudentSyllabusPage extends StatefulWidget {
   const StudentSyllabusPage({super.key});
@@ -143,7 +144,7 @@ class _StudentSyllabusPageState extends State<StudentSyllabusPage> {
                                   builder: (context) => SyllabusDetailPage(
                                     classId: classId,
                                     subjectId: subject.subjectId,
-                                    academicYear: "2025-2026",
+                                    academicYear: AppConfig.academicYear,
                                     subjectName: subject.subjectName,
                                   ),
                                 ),

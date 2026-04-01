@@ -2,11 +2,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '/models/student_library_book.dart';
 
 class LibraryApiService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library";
+  static String get baseUrl => '${AppConfig.baseUrl}/library';
 
   /// Search books and return model objects
   static Future<List<StudentLibraryBook>> searchBooks({
@@ -24,13 +24,14 @@ class LibraryApiService {
     if (isbn?.isNotEmpty ?? false) queryParams['isbn'] = isbn!;
     if (genre?.isNotEmpty ?? false) queryParams['genre'] = genre!;
 
-    final uri = Uri.parse('$baseUrl/books/search')
-        .replace(queryParameters: queryParams.isEmpty ? null : queryParams);
+    final uri = Uri.parse(
+      '$baseUrl/books/search',
+    ).replace(queryParameters: queryParams.isEmpty ? null : queryParams);
 
-    final response = await http.get(uri, headers: {
-      'accept': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
+    final response = await http.get(
+      uri,
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decoded = jsonDecode(response.body);
@@ -38,7 +39,8 @@ class LibraryApiService {
       return data.map((e) => StudentLibraryBook.fromJson(e)).toList();
     } else {
       throw Exception(
-          'Failed to fetch books: ${response.statusCode} ${response.body}');
+        'Failed to fetch books: ${response.statusCode} ${response.body}',
+      );
     }
   }
 

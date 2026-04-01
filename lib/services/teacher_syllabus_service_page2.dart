@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class SyllabusItem {
   final int? id;
@@ -8,12 +9,7 @@ class SyllabusItem {
   final String? description;
   final int? sequence;
 
-  SyllabusItem({
-    this.id,
-    this.title,
-    this.description,
-    this.sequence,
-  });
+  SyllabusItem({this.id, this.title, this.description, this.sequence});
 
   factory SyllabusItem.fromJson(Map<String, dynamic> json) {
     return SyllabusItem(
@@ -51,20 +47,26 @@ class SyllabusTerm {
 }
 
 class SyllabusService {
-  final String baseUrl =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  String get baseUrl => AppConfig.serverOrigin;
 
   Future<List<SyllabusTerm>> fetchSyllabus(
-      int classId, int subjectId, String academicYear) async {
+    int classId,
+    int subjectId, {
+    String? academicYear,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
+    final effectiveAcademicYear = academicYear?.trim().isNotEmpty == true
+        ? academicYear!.trim()
+        : AppConfig.academicYear;
 
     if (token == null) {
       throw Exception("No token found. Please log in again.");
     }
 
-    final url =
-        Uri.parse('$baseUrl/api/syllabus/$classId/$subjectId/$academicYear');
+    final url = Uri.parse(
+      '$baseUrl/api/syllabus/$classId/$subjectId/$effectiveAcademicYear',
+    );
 
     final response = await http.get(
       url,
@@ -82,8 +84,6 @@ class SyllabusService {
     }
   }
 }
-
-
 
 extension AddItem on SyllabusService {
   Future<void> addSyllabusItem({

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:school_app/config/config.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
 import 'student_menu_drawer.dart';
 import '../../services/student_schoolbus.dart';
@@ -25,8 +26,10 @@ class _StudentSchoolBusPageState extends State<StudentSchoolBusPage> {
 
   Future<void> _loadTransport() async {
     try {
-      // Example student_id = 18, academic_year = "2025-2026"
-      final data = await TransportService.fetchStudentTransport(18, "2025-2026");
+      final data = await TransportService.fetchStudentTransport(
+        18,
+        academicYear: AppConfig.academicYear,
+      );
       setState(() {
         transport = data;
         isLoading = false;
@@ -53,9 +56,15 @@ class _StudentSchoolBusPageState extends State<StudentSchoolBusPage> {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
                 const SizedBox(height: 4),
-                Text(value, style: const TextStyle(fontSize: 16, color: Colors.black)),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
               ],
             )
           : Row(
@@ -64,12 +73,21 @@ class _StudentSchoolBusPageState extends State<StudentSchoolBusPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    Text(
+                      label,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
                     const SizedBox(height: 4),
-                    Text(value, style: const TextStyle(fontSize: 16, color: Colors.black)),
+                    Text(
+                      value,
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    ),
                   ],
                 ),
-                Text(value2, style: const TextStyle(fontSize: 16, color: Colors.black)),
+                Text(
+                  value2,
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
               ],
             ),
     );
@@ -88,61 +106,72 @@ class _StudentSchoolBusPageState extends State<StudentSchoolBusPage> {
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : errorMsg.isNotEmpty
-                ? Center(child: Text(errorMsg))
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            ? Center(child: Text(errorMsg))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 🔙 Back Button
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Text(
+                        '< Back',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 🚍 Icon + Title
+                    Row(
                       children: [
-                        // 🔙 Back Button
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Text(
-                            '< Back',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E3192),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: SvgPicture.asset(
+                            'assets/icons/transport.svg',
+                            height: 20,
+                            width: 20,
+                            color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 8),
-
-                        // 🚍 Icon + Title
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2E3192),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: SvgPicture.asset(
-                                'assets/icons/transport.svg',
-                                height: 20,
-                                width: 20,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'School Bus',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2E3192),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        const Text(
+                          'School Bus',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2E3192),
+                          ),
                         ),
-                        const SizedBox(height: 20),
-
-                        // API Data
-                        buildInfoRow("Bus Number", transport!.busNumber),
-                        buildInfoRow("Pick-up Time", transport!.arrivalTime),
-                        buildInfoRow("Pick-up Location", transport!.stopName),
-                        buildInfoRow("Driver", transport!.driverName, value2: transport!.driverContact),
-                        buildInfoRow("Transport Manager",
-                            transport!.managerName ?? "-", value2: transport!.managerContact ?? "-"),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 20),
+
+                    // API Data
+                    buildInfoRow("Bus Number", transport!.busNumber),
+                    buildInfoRow("Pick-up Time", transport!.arrivalTime),
+                    buildInfoRow("Pick-up Location", transport!.stopName),
+                    buildInfoRow(
+                      "Driver",
+                      transport!.driverName,
+                      value2: transport!.driverContact,
+                    ),
+                    buildInfoRow(
+                      "Transport Manager",
+                      transport!.managerName ?? "-",
+                      value2: transport!.managerContact ?? "-",
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }

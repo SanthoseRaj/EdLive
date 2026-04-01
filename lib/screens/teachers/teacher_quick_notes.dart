@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:school_app/config/config.dart';
 import 'teacher_quick_notes_addpage.dart';
 import 'package:school_app/widgets/teacher_app_bar.dart';
 import 'package:school_app/screens/teachers/teacher_menu_drawer.dart';
@@ -605,8 +606,7 @@ class StickyNote {
 }
 
 class QuickNoteService {
-  static const String baseUrl =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  static String get baseUrl => AppConfig.serverOrigin;
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();

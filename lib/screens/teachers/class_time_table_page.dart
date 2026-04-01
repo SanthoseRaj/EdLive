@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/teacher_period_model.dart';
 import 'package:intl/intl.dart';
+import 'package:school_app/config/config.dart';
 
 class TimeTablePage extends StatefulWidget {
   const TimeTablePage({super.key});
@@ -38,9 +39,10 @@ class _TimeTablePageState extends State<TimeTablePage> {
     final today = DateTime.now();
     final index = today.difference(_startDate).inDays;
 
-    final offset = (index * itemWidth) - (MediaQuery.of(context).size.width / 2) + (itemWidth / 2);
-
-  
+    final offset =
+        (index * itemWidth) -
+        (MediaQuery.of(context).size.width / 2) +
+        (itemWidth / 2);
 
     _scrollController.animateTo(
       offset,
@@ -51,18 +53,19 @@ class _TimeTablePageState extends State<TimeTablePage> {
 
   Future<void> fetchTimetable() async {
     final prefs = await SharedPreferences.getInstance();
-final token = prefs.getString('auth_token') ?? '';    
-final userData = prefs.getString('user_data');
-final user = jsonDecode(userData!);
+    final token = prefs.getString('auth_token') ?? '';
+    final userData = prefs.getString('user_data');
+    final user = jsonDecode(userData!);
 
-    final url = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/timetable/2024-2025';
-  final response = await http.get(
-  Uri.parse(url),
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $token', // ✅ Add this line
-  },
-);
+    final url =
+        '${AppConfig.baseUrl}/staff/staff/timetable/${AppConfig.academicYear}';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // ✅ Add this line
+      },
+    );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -76,24 +79,25 @@ final user = jsonDecode(userData!);
     }
   }
 
-void _onDateTap(DateTime date, int index) {
-  setState(() {
-    _centerDate = date;
-  });
+  void _onDateTap(DateTime date, int index) {
+    setState(() {
+      _centerDate = date;
+    });
 
-  final screenWidth = MediaQuery.of(context).size.width;
-  final itemWidth = screenWidth / 7; // No spacing
+    final screenWidth = MediaQuery.of(context).size.width;
+    final itemWidth = screenWidth / 7; // No spacing
 
-  final offset = (index - 3) * itemWidth;
+    final offset = (index - 3) * itemWidth;
 
-  _scrollController.animateTo(
-    offset.clamp(0.0, _scrollController.position.maxScrollExtent),
-    duration: const Duration(milliseconds: 300),
-    curve: Curves.easeInOut,
-  );
-}
+    _scrollController.animateTo(
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
-  List<DateTime> get _visibleDates => List.generate(30, (index) => _startDate.add(Duration(days: index)));
+  List<DateTime> get _visibleDates =>
+      List.generate(30, (index) => _startDate.add(Duration(days: index)));
 
   List<dynamic> _getClassesForSelectedDay() {
     if (_classSchedule.isEmpty) return [];
@@ -102,7 +106,8 @@ void _onDateTap(DateTime date, int index) {
     String periodIdKey = '${dayName}_period_id';
 
     var filteredClasses = _classSchedule.where((classItem) {
-      return classItem[dayName] != null && classItem[dayName].toString().isNotEmpty;
+      return classItem[dayName] != null &&
+          classItem[dayName].toString().isNotEmpty;
     }).toList();
 
     filteredClasses.sort((a, b) {
@@ -116,11 +121,9 @@ void _onDateTap(DateTime date, int index) {
 
   @override
   Widget build(BuildContext context) {
- final screenWidth = MediaQuery.of(context).size.width;
-final containerSpacing = 4.0; // 2 left + 2 right margin
-final itemWidth = (screenWidth - (6 * containerSpacing)) / 7;
-
-
+    final screenWidth = MediaQuery.of(context).size.width;
+    final containerSpacing = 4.0; // 2 left + 2 right margin
+    final itemWidth = (screenWidth - (6 * containerSpacing)) / 7;
 
     final currentMonth = DateFormat('MMMM yyyy').format(_centerDate);
     final classesForDay = _getClassesForSelectedDay();
@@ -141,7 +144,11 @@ final itemWidth = (screenWidth - (6 * containerSpacing)) / 7;
                       icon: const Icon(Icons.arrow_left),
                       onPressed: () {
                         setState(() {
-                          _centerDate = DateTime(_centerDate.year, _centerDate.month - 1, _centerDate.day);
+                          _centerDate = DateTime(
+                            _centerDate.year,
+                            _centerDate.month - 1,
+                            _centerDate.day,
+                          );
                         });
                       },
                     ),
@@ -157,111 +164,128 @@ final itemWidth = (screenWidth - (6 * containerSpacing)) / 7;
                       icon: const Icon(Icons.arrow_right),
                       onPressed: () {
                         setState(() {
-                          _centerDate = DateTime(_centerDate.year, _centerDate.month + 1, _centerDate.day);
+                          _centerDate = DateTime(
+                            _centerDate.year,
+                            _centerDate.month + 1,
+                            _centerDate.day,
+                          );
                         });
                       },
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-            
-SizedBox(
-  height: 80, // Adjust height as needed
-  child: Stack(
-    clipBehavior: Clip.none,
-    children: [
-      Positioned.fill(
-        child: ListView.builder(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          itemCount: _visibleDates.length,
-          physics: const BouncingScrollPhysics(),
-          itemBuilder: (context, index) {
-            final date = _visibleDates[index];
-            final isSelected = _centerDate.day == date.day &&
-                _centerDate.month == date.month &&
-                _centerDate.year == date.year;
 
-      return GestureDetector(
-  onTap: () => _onDateTap(date, index),
-  child: SizedBox(
-    width: itemWidth, // 🔥 Exactly 1/7th of screen
-    child: Container(
-      // ❌ no margin here
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.blue : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10), // ✅ internal padding only
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            DateFormat('EEE').format(date),
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : Colors.black87,
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            date.day.toString(),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.black87,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-);
-    },
-        ),
-      ),
-      // Left arrow
-      Positioned(
-        left: -12,
-        top: 0,
-        bottom: 0,
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 16),
-          onPressed: () {
-            setState(() {
-              _startDate = _startDate.subtract(const Duration(days: 7));
-              _centerCurrentDate();
-            });
-          },
-        ),
-      ),
-      // Right arrow
-      Positioned(
-        right: -12,
-        top: 0,
-        bottom: 0,
-        child: IconButton(
-          icon: const Icon(Icons.arrow_forward_ios, size: 16),
-          onPressed: () {
-            setState(() {
-              _startDate = _startDate.add(const Duration(days: 7));
-              _centerCurrentDate();
-            });
-          },
-        ),
-      ),
-    ],
-  ),
-),
-           const SizedBox(height: 2),
+                SizedBox(
+                  height: 80, // Adjust height as needed
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _visibleDates.length,
+                          physics: const BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            final date = _visibleDates[index];
+                            final isSelected =
+                                _centerDate.day == date.day &&
+                                _centerDate.month == date.month &&
+                                _centerDate.year == date.year;
+
+                            return GestureDetector(
+                              onTap: () => _onDateTap(date, index),
+                              child: SizedBox(
+                                width: itemWidth, // 🔥 Exactly 1/7th of screen
+                                child: Container(
+                                  // ❌ no margin here
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? Colors.blue
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ), // ✅ internal padding only
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        DateFormat('EEE').format(date),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Colors.black87,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        date.day.toString(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Colors.black87,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      // Left arrow
+                      Positioned(
+                        left: -12,
+                        top: 0,
+                        bottom: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, size: 16),
+                          onPressed: () {
+                            setState(() {
+                              _startDate = _startDate.subtract(
+                                const Duration(days: 7),
+                              );
+                              _centerCurrentDate();
+                            });
+                          },
+                        ),
+                      ),
+                      // Right arrow
+                      Positioned(
+                        right: -12,
+                        top: 0,
+                        bottom: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onPressed: () {
+                            setState(() {
+                              _startDate = _startDate.add(
+                                const Duration(days: 7),
+                              );
+                              _centerCurrentDate();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
                 if (_isLoading)
                   const Padding(
                     padding: EdgeInsets.all(32),
@@ -269,7 +293,10 @@ SizedBox(
                   )
                 else if (_errorMessage.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Text(
                       _errorMessage,
                       style: const TextStyle(color: Colors.red, fontSize: 14),
@@ -277,10 +304,16 @@ SizedBox(
                   )
                 else if (classesForDay.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Text(
                       "No classes scheduled for today",
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
                     ),
                   )
                 else
@@ -301,28 +334,30 @@ SizedBox(
                       final isUpcoming = index > 0;
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-  Text(
-    time ?? '',
-    style: const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: Colors.black87, // ✅ fixed color
-    ),
-  ),
-  const SizedBox(height: 4),
-  Text(
-    "$className - $subject",
-    style: const TextStyle(
-      fontSize: 14,
-      color: Colors.grey,
-    ),
-  ),
-],
-
+                          children: [
+                            Text(
+                              time ?? '',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87, // ✅ fixed color
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "$className - $subject",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },

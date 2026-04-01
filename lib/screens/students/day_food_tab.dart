@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
 import 'food_tile.dart';
+import 'package:school_app/config/config.dart';
 
 class DayFoodTab extends StatefulWidget {
   const DayFoodTab({super.key});
@@ -152,8 +153,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
       final formattedDate =
           "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/weekly-menu?date=$formattedDate";
+      final url = "${AppConfig.baseUrl}/food/weekly-menu?date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -216,8 +216,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
             : null,
       };
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule";
+      final url = "${AppConfig.baseUrl}/food/schedule";
 
       final response = await http.post(
         Uri.parse(url),
@@ -273,8 +272,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
       final apiDate =
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$apiDate";
+      final url = "${AppConfig.baseUrl}/food/schedule/$studentId/$apiDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -312,9 +310,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     final token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/weekdays',
-      ),
+      Uri.parse('${AppConfig.baseUrl}/weekdays'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

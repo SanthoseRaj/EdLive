@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/student_library_book.dart';
 import '../models/student_library_copy.dart';
 
 class StudentLibraryService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library";
+  String get baseUrl => '${AppConfig.baseUrl}/library';
 
   // Fetch all active books
   Future<List<StudentLibraryBook>> fetchAllBooks() async {
@@ -15,10 +15,7 @@ class StudentLibraryService {
 
     final response = await http.get(
       Uri.parse("$baseUrl/books"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "accept": "application/json",
-      },
+      headers: {"Authorization": "Bearer $token", "accept": "application/json"},
     );
 
     if (response.statusCode == 200) {
@@ -37,18 +34,16 @@ class StudentLibraryService {
 
     final response = await http.get(
       Uri.parse("$baseUrl/books/$id"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "accept": "application/json",
-      },
+      headers: {"Authorization": "Bearer $token", "accept": "application/json"},
     );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final book = StudentLibraryBook.fromJson(data["data"]);
       final copiesJson = data["data"]["copies"] as List;
-      final copies =
-          copiesJson.map((e) => StudentLibraryCopy.fromJson(e)).toList();
+      final copies = copiesJson
+          .map((e) => StudentLibraryCopy.fromJson(e))
+          .toList();
       return {"book": book, "copies": copies};
     } else {
       throw Exception("Failed to load book details: ${response.body}");

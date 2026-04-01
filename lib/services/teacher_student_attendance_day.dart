@@ -1,11 +1,11 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/teacher_student_attendance_day.dart';
 
 class TeacherAttendanceService {
-  static const String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
+  static String get baseUrl => AppConfig.serverOrigin;
 
   static Future<List<AttendanceStudent>> fetchAttendanceStudents() async {
     final prefs = await SharedPreferences.getInstance();
@@ -18,10 +18,12 @@ class TeacherAttendanceService {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => AttendanceStudent(
-        id: json['id'],
-        name: json['student_name'],
-      )).toList();
+      return data
+          .map(
+            (json) =>
+                AttendanceStudent(id: json['id'], name: json['student_name']),
+          )
+          .toList();
     } else {
       throw Exception('Failed to load students');
     }

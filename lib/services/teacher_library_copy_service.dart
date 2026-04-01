@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/teacher_library_book_copy.dart';
 
 class LibraryCopyService {
-  final String baseUrl = "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  String get baseUrl => AppConfig.baseUrl;
 
   Future<LibraryBookCopy?> addCopy(LibraryBookCopy copy) async {
     final prefs = await SharedPreferences.getInstance();

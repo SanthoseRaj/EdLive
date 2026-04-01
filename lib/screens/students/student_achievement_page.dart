@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 import 'package:school_app/screens/students/student_menu_drawer.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,7 +61,7 @@ String getFullFileUrl(String url) {
   if (url.startsWith("http")) {
     return url;
   }
-  return "https://schoolmanagement.canadacentral.cloudapp.azure.com:443$url";
+  return AppConfig.absoluteUrl(url);
 }
 
 Widget buildAchievementFile(String url, {double height = 200}) {
@@ -220,8 +221,9 @@ class _StudentAchievementPageState extends State<StudentAchievementPage> {
       }
 
       final response = await http.get(
-        Uri.parse(
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/achievements/visible?studentId=$studentId",
+        AppConfig.apiUri(
+          '/achievements/visible',
+          queryParameters: {'studentId': studentId},
         ),
         headers: {
           'accept': 'application/json',
@@ -270,8 +272,9 @@ class _StudentAchievementPageState extends State<StudentAchievementPage> {
     }
 
     final response = await http.get(
-      Uri.parse(
-        "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/achievements/visible?studentId=$studentId",
+      AppConfig.apiUri(
+        '/achievements/visible',
+        queryParameters: {'studentId': studentId},
       ),
       headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
@@ -309,8 +312,9 @@ class _StudentAchievementPageState extends State<StudentAchievementPage> {
 
     try {
       final response = await http.post(
-        Uri.parse(
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId",
+        AppConfig.apiUri(
+          '/dashboard/viewed',
+          queryParameters: {'studentId': studentId},
         ),
         headers: {
           "Authorization": "Bearer $token",

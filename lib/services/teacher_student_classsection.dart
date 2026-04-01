@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 import '../models/teacher_student_classsection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class StudentService {
   Future<List<StudentClassSection>> fetchStudents() async {
@@ -14,11 +14,8 @@ class StudentService {
     }
 
     final response = await http.get(
-      Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/students/list'),
-      headers: {
-        'accept': '*/*',
-        'Authorization': 'Bearer $token',
-      },
+      Uri.parse('${AppConfig.baseUrl}/staff/staff/students/list'),
+      headers: {'accept': '*/*', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -31,7 +28,7 @@ class StudentService {
 }
 
 class AttendanceService {
-  final String baseUrl = 'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api';
+  final String baseUrl = AppConfig.baseUrl;
 
   Future<void> toggleAttendance({
     required int studentId,

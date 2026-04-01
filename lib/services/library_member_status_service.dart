@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:school_app/config/config.dart';
 
 class LibraryService {
   Future<List<dynamic>> fetchMembers() async {
@@ -9,7 +10,7 @@ class LibraryService {
       final token = prefs.getString('auth_token');
 
       final response = await http.get(
-        Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library/members'),
+        Uri.parse('${AppConfig.baseUrl}/library/members'),
         headers: {
           'accept': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',

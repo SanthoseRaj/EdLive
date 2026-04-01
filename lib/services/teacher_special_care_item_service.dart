@@ -7,12 +7,12 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 import '../models/teacher_special_care_item.dart';
 
 class SpecialCareItemService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/special-care";
+  static String get baseUrl => '${AppConfig.baseUrl}/special-care';
   static const String _fileFieldName = 'specialCareFileUpload';
 
   Future<SpecialCareItem> createSpecialCareItem(

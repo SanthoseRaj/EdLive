@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 import '../models/teacher_library_member.dart';
 
 class LibraryMemberService {
-  final String baseUrl = "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  String get baseUrl => AppConfig.baseUrl;
 
   Future<LibraryMember?> addMember(LibraryMember member) async {
     final prefs = await SharedPreferences.getInstance();

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:school_app/models/teacher_attendance_year.dart';
-
+import 'package:school_app/config/config.dart';
 
 class AttendanceService {
   Future<List<TeacherDailyAttendance>> fetchTeacherDailyAttendance({
@@ -16,12 +16,9 @@ class AttendanceService {
 
     final response = await http.get(
       Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/attendance/teacher?classId=$classId&date=$date',
+        '${AppConfig.baseUrl}/attendance/teacher?classId=$classId&date=$date',
       ),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'accept': '*/*',
-      },
+      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
     );
 
     if (response.statusCode == 200) {
@@ -29,7 +26,9 @@ class AttendanceService {
 
       return data.map((e) => TeacherDailyAttendance.fromJson(e)).toList();
     } else {
-      throw Exception("Failed to fetch teacher daily attendance: ${response.statusCode}");
+      throw Exception(
+        "Failed to fetch teacher daily attendance: ${response.statusCode}",
+      );
     }
   }
 }

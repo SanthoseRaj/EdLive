@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class LibraryBookDetailService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/library";
+  String get baseUrl => '${AppConfig.baseUrl}/library';
 
   Future<Map<String, dynamic>?> getBookById(int id) async {
     final prefs = await SharedPreferences.getInstance();

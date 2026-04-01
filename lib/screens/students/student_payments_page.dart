@@ -11,12 +11,13 @@ import 'package:school_app/widgets/student_app_bar.dart';
 import 'package:school_app/models/student_payment_model.dart';
 import 'package:school_app/services/student_payment_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:school_app/config/config.dart';
 
 class StudentPaymentsPage extends StatefulWidget {
   final String studentId;
 
   const StudentPaymentsPage({Key? key, required this.studentId})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<StudentPaymentsPage> createState() => _StudentPaymentsPageState();
@@ -27,7 +28,6 @@ class _StudentPaymentsPageState extends State<StudentPaymentsPage> {
   List<StudentPayment> _payments = [];
   bool _isLoading = true;
   bool _hasError = false;
-
 
   @override
   void initState() {
@@ -48,18 +48,18 @@ class _StudentPaymentsPageState extends State<StudentPaymentsPage> {
         throw Exception("Missing auth token");
       }
 
-      final payments =
-          await StudentPaymentService().fetchStudentPayments(widget.studentId);
-          
+      final payments = await StudentPaymentService().fetchStudentPayments(
+        widget.studentId,
+      );
 
       // ✅ Mark only due/overdue payments as viewed automatically
       for (var p in payments) {
-  await markPaymentAsViewed(p.studentId, p.feeAssignmentId);
-}
+        await markPaymentAsViewed(p.studentId, p.feeAssignmentId);
+      }
 
-setState(() {
-  _payments = payments;
-});
+      setState(() {
+        _payments = payments;
+      });
 
       setState(() {
         _payments = payments;
@@ -73,29 +73,26 @@ setState(() {
     }
   }
 
- Future<void> markPaymentAsViewed(int studentId, int feeAssignmentId) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('auth_token') ?? '';
+  Future<void> markPaymentAsViewed(int studentId, int feeAssignmentId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
 
-  final response = await http.post(
-    Uri.parse("https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId"),
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode({
-      "item_type": "payments",
-      "item_id": feeAssignmentId,
-    }),
-  );
+    final response = await http.post(
+      Uri.parse("${AppConfig.baseUrl}/dashboard/viewed?studentId=$studentId"),
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({"item_type": "payments", "item_id": feeAssignmentId}),
+    );
 
-  if (response.statusCode == 200) {
-    print("✅ Marked as viewed: $feeAssignmentId");
-  } else {
-    print("❌ Failed to mark viewed: ${response.body}");
+    if (response.statusCode == 200) {
+      print("✅ Marked as viewed: $feeAssignmentId");
+    } else {
+      print("❌ Failed to mark viewed: ${response.body}");
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -117,8 +114,10 @@ setState(() {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -126,15 +125,12 @@ setState(() {
                       const SizedBox(height: 20),
                       Expanded(
                         child: _isLoading
-                            ? const Center(
-                                child: CircularProgressIndicator(),
-                              )
+                            ? const Center(child: CircularProgressIndicator())
                             : _hasError
-                                ? const Center(
-                                    child: Text("Failed to load data."))
-                                : isDueSelected
-                                    ? _buildDueSection()
-                                    : _buildHistorySection(),
+                            ? const Center(child: Text("Failed to load data."))
+                            : isDueSelected
+                            ? _buildDueSection()
+                            : _buildHistorySection(),
                       ),
                     ],
                   ),
@@ -155,15 +151,19 @@ setState(() {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: const Text('< Back',
-                style: TextStyle(fontSize: 16, color: Colors.black)),
+            child: const Text(
+              '< Back',
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2E3192),
                   borderRadius: BorderRadius.circular(4),
@@ -172,17 +172,20 @@ setState(() {
                   'assets/icons/payments.svg',
                   width: 20,
                   height: 17,
-                  colorFilter:
-                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               const Text(
                 "Payments",
                 style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E3192)),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2E3192),
+                ),
               ),
             ],
           ),
@@ -201,8 +204,7 @@ setState(() {
               Text(
                 "Due",
                 style: TextStyle(
-                  color:
-                      isDueSelected ? const Color(0xFF29ABE2) : Colors.black,
+                  color: isDueSelected ? const Color(0xFF29ABE2) : Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -220,8 +222,9 @@ setState(() {
               Text(
                 "History",
                 style: TextStyle(
-                  color:
-                      !isDueSelected ? const Color(0xFF29ABE2) : Colors.black,
+                  color: !isDueSelected
+                      ? const Color(0xFF29ABE2)
+                      : Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -237,7 +240,9 @@ setState(() {
 
   Widget _buildDueSection() {
     final duePayments = _payments
-        .where((p) => p.paymentStatus == "pending" || p.paymentStatus == "overdue")
+        .where(
+          (p) => p.paymentStatus == "pending" || p.paymentStatus == "overdue",
+        )
         .toList();
 
     if (duePayments.isEmpty) {
@@ -272,10 +277,14 @@ setState(() {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text("Fee: ${payment.feeName}",
-                    style: const TextStyle(fontSize: 16)),
-                Text("Amount: ₹${payment.amount}",
-                    style: const TextStyle(fontSize: 16)),
+                Text(
+                  "Fee: ${payment.feeName}",
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Text(
+                  "Amount: ₹${payment.amount}",
+                  style: const TextStyle(fontSize: 16),
+                ),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -340,8 +349,7 @@ setState(() {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text("Or pay via link",
-                      style: TextStyle(fontSize: 16)),
+                  const Text("Or pay via link", style: TextStyle(fontSize: 16)),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -374,8 +382,9 @@ setState(() {
   }
 
   Widget _buildHistorySection() {
-    final paidPayments =
-        _payments.where((p) => p.paymentStatus == "paid").toList();
+    final paidPayments = _payments
+        .where((p) => p.paymentStatus == "paid")
+        .toList();
 
     if (paidPayments.isEmpty) {
       return const Center(child: Text("No payment history available."));
@@ -395,17 +404,26 @@ setState(() {
             decoration: BoxDecoration(color: Color(0xFFEFEFEF)),
             children: [
               Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Payment Info',
-                      style: TextStyle(fontWeight: FontWeight.bold))),
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  'Payment Info',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
               Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Amount',
-                      style: TextStyle(fontWeight: FontWeight.bold))),
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  'Amount',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
               Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Date',
-                      style: TextStyle(fontWeight: FontWeight.bold))),
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  'Date',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
           ...paidPayments.map((p) {
@@ -413,15 +431,20 @@ setState(() {
             return TableRow(
               children: [
                 Padding(
-                    padding: const EdgeInsets.all(10), child: Text(p.feeName)),
+                  padding: const EdgeInsets.all(10),
+                  child: Text(p.feeName),
+                ),
                 Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text("₹${p.amount}")),
+                  padding: const EdgeInsets.all(10),
+                  child: Text("₹${p.amount}"),
+                ),
                 Padding(
-                    padding: const EdgeInsets.all(10), child: Text(paymentDate)),
+                  padding: const EdgeInsets.all(10),
+                  child: Text(paymentDate),
+                ),
               ],
             );
-          }).toList()
+          }).toList(),
         ],
       ),
     );

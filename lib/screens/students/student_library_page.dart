@@ -10,6 +10,7 @@ import 'package:school_app/services/student_library_checkout_service.dart';
 import 'package:school_app/services/library_book_search_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class StudentLibraryPage extends StatefulWidget {
   const StudentLibraryPage({super.key});
@@ -65,9 +66,7 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
   ) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId",
-        ),
+        Uri.parse("${AppConfig.baseUrl}/dashboard/viewed?studentId=$studentId"),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',

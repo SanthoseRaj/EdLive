@@ -10,6 +10,7 @@ import 'package:school_app/models/teacher_exam_model.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 
 class TeacherExamPage extends StatefulWidget {
   const TeacherExamPage({super.key});
@@ -43,9 +44,7 @@ class _TeacherExamPageState extends State<TeacherExamPage>
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
-      final url = Uri.parse(
-        'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/exams/teacher/$classId',
-      );
+      final url = Uri.parse('${AppConfig.baseUrl}/exams/teacher/$classId');
 
       final response = await http.get(
         url,
@@ -70,9 +69,7 @@ class _TeacherExamPageState extends State<TeacherExamPage>
   }
 
   Future<void> fetchClasses() async {
-    final url = Uri.parse(
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/master/classes',
-    );
+    final url = Uri.parse('${AppConfig.baseUrl}/master/classes');
 
     try {
       final response = await http.get(url);

@@ -4,7 +4,7 @@
 
 // class StudentService {
 //   Future<List<StudentClassSection>> fetchStudents() async {
-//     final url = Uri.parse('https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/staff/staff/students/list');
+//     final url = Uri.parse('${AppConfig.baseUrl}/staff/staff/students/list');
 
 //     final response = await http.get(
 //       url,

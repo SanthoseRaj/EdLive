@@ -1,15 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 import 'package:http_parser/http_parser.dart'; // For MediaType
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherProfileService {
-  final String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
+  String get baseUrl => AppConfig.serverOrigin;
 
   /// Uploads new profile image for the staff
-  Future<String?> updateProfileImage({required int staffId, required File imageFile}) async {
+  Future<String?> updateProfileImage({
+    required int staffId,
+    required File imageFile,
+  }) async {
     try {
       if (!imageFile.existsSync()) {
         throw Exception("Selected file does not exist");
@@ -29,11 +32,13 @@ class TeacherProfileService {
         "Accept": "application/json",
       });
 
-      request.files.add(await http.MultipartFile.fromPath(
-        'profileImage',
-        imageFile.path,
-        contentType: MediaType('image', 'jpeg'), // or 'png' if your image
-      ));
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'profileImage',
+          imageFile.path,
+          contentType: MediaType('image', 'jpeg'), // or 'png' if your image
+        ),
+      );
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -48,7 +53,8 @@ class TeacherProfileService {
         throw Exception("Invalid file or file type");
       } else {
         throw Exception(
-            "Failed to upload image (${response.statusCode}): ${response.body}");
+          "Failed to upload image (${response.statusCode}): ${response.body}",
+        );
       }
     } catch (e, st) {
       print("Error stack: $st");

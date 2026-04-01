@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import '../models/student_todo_model.dart';
 
 class StudentTaskProvider with ChangeNotifier {
@@ -11,8 +12,7 @@ class StudentTaskProvider with ChangeNotifier {
 
   Set<String> _seenTaskIds = {}; // Track seen task IDs
 
-  final String _baseUrl =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/todos/student';
+  String get _baseUrl => '${AppConfig.baseUrl}/todos/student';
 
   void setAuthToken(String? token) {
     _authToken = token;

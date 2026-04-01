@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
 import 'package:school_app/screens/students/student_menu_drawer.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
 import 'dart:async';
@@ -45,8 +46,7 @@ class StudentMessage {
 
 /// ---------------- SERVICE ----------------
 class MessageService {
-  static const String baseUrl =
-      "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
+  static String get baseUrl => AppConfig.baseUrl;
 
   static Future<List<StudentMessage>> fetchMessages(int studentId) async {
     final prefs = await SharedPreferences.getInstance();

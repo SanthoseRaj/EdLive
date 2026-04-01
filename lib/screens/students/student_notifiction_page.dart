@@ -13,6 +13,7 @@ import 'student_library_book_detail_page.dart';
 import 'student_library_page.dart';
 import 'student_messages_page.dart';
 import 'student_todo_list_screen.dart';
+import 'package:school_app/config/config.dart';
 
 int _parseNotificationInt(dynamic value) {
   if (value is int) {
@@ -217,8 +218,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
 
       if (token == null || studentId == null) return;
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId";
+      final url = "${AppConfig.baseUrl}/dashboard/viewed?studentId=$studentId";
 
       final response = await http.post(
         Uri.parse(url),
@@ -276,7 +276,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
       final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
+          "${AppConfig.baseUrl}/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
 
       final response = await http.get(
         Uri.parse(url),
@@ -662,7 +662,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
 //       if (token == null || studentId == null) return;
 
 //       final url =
-//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId";
+//           "${AppConfig.baseUrl}/dashboard/viewed?studentId=$studentId";
 
 //       final response = await http.post(
 //         Uri.parse(url),
@@ -737,7 +737,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
 //       final formattedDate = DateFormat('yyyy-MM-dd').format(dateToFetch);
 
 //       final url =
-//           "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
+//           "${AppConfig.baseUrl}/dashboard/daily-notifications?studentId=$studentId&date=$formattedDate";
 
 //       final response = await http.get(
 //         Uri.parse(url),
