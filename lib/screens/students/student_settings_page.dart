@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:school_app/providers/student_settings_provider.dart';
-import 'student_menu_drawer.dart';
 import 'package:school_app/widgets/student_app_bar.dart';
+
+import 'student_menu_drawer.dart';
 
 class StudentSettingsPage extends StatefulWidget {
   const StudentSettingsPage({super.key});
@@ -16,15 +17,16 @@ class StudentSettingsPage extends StatefulWidget {
 class _StudentSettingsPageState extends State<StudentSettingsPage> {
   int _selectedTab = 0;
 
-  // ✅ Only keep needed settings
-  final settingsKeys = [
-    'Achievements',
-    'PTA',
-    'Syllabus',
-    'Message',
-    'School bus',
-    'Co curricular activities',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      context.read<StudentSettingsProvider>().loadSettings(forceRefresh: true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,85 +50,13 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
           body: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-               SizedBox(height: 80, child: StudentAppBar()),
+              const SizedBox(height: 80, child: StudentAppBar()),
               _buildHeader(),
               _buildTabBar(),
-
               Flexible(
                 fit: FlexFit.loose,
                 child: _selectedTab == 0
-                    ? ListView.builder(
-                        itemCount: settingsKeys.length,
-                        itemBuilder: (context, index) {
-                          final key = settingsKeys[index];
-                          bool value = false;
-
-                          // ✅ Map keys to provider values
-                          switch (key) {
-                            case 'Achievements':
-                              value = settings.showAchievements;
-                              break;
-                            case 'PTA':
-                              value = settings.showPTA;
-                              break;
-                            case 'Syllabus':
-                              value = settings.showSyllabus;
-                              break;
-                            case 'Message':
-                              value = settings.showMessage;
-                              break;
-                            case 'School bus':
-                              value = settings.showSchoolBus;
-                              break;
-                            case 'Co curricular activities':
-                              value = settings.showCoCurricular;
-                              break;
-                          }
-
-                          return Column(
-                            children: [
-                              Theme(
-                                data: Theme.of(context).copyWith(
-                                  splashColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  splashFactory: NoSplash.splashFactory,
-                                  switchTheme: SwitchThemeData(
-                                    thumbColor:
-                                        MaterialStateProperty.resolveWith<Color>(
-                                      (states) => states.contains(MaterialState.selected)
-                                          ? Colors.white
-                                          : Colors.grey.shade400,
-                                    ),
-                                    trackColor:
-                                        MaterialStateProperty.resolveWith<Color>(
-                                      (states) => states.contains(MaterialState.selected)
-                                          ? const Color(0xFF77FF00)
-                                          : Colors.grey.shade300,
-                                    ),
-                                  ),
-                                ),
-                                child: SwitchListTile(
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(horizontal: 16),
-                                  title: Text(key),
-                                  value: value,
-                                  tileColor: Colors.transparent,
-                                  onChanged: (bool newValue) {
-                                    settings.updateVisibility(key, newValue);
-                                  },
-                                ),
-                              ),
-                              if (index < settingsKeys.length - 1)
-                                const Divider(
-                                  height: 0,
-                                  indent: 16,
-                                  color: Color(0xFFE6E6E6), // ✅ Divider color
-                                ),
-                            ],
-                          );
-                        },
-                      )
+                    ? _buildDashboardSettings(settings)
                     : ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
@@ -140,7 +70,7 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
                             ),
                             child: const Center(
                               child: Text(
-                                "Reset password",
+                                'Reset password',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -156,6 +86,71 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDashboardSettings(StudentSettingsProvider settings) {
+    if (settings.isLoading && !settings.hasLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ListView.builder(
+      itemCount: settings.options.length,
+      itemBuilder: (context, index) {
+        final option = settings.options[index];
+        final value = settings.isVisible(option.key);
+        final messenger = ScaffoldMessenger.of(context);
+
+        return Column(
+          children: [
+            Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+                switchTheme: SwitchThemeData(
+                  thumbColor: WidgetStateProperty.resolveWith<Color>(
+                    (states) => states.contains(WidgetState.selected)
+                        ? Colors.white
+                        : Colors.grey.shade400,
+                  ),
+                  trackColor: WidgetStateProperty.resolveWith<Color>(
+                    (states) => states.contains(WidgetState.selected)
+                        ? const Color(0xFF77FF00)
+                        : Colors.grey.shade300,
+                  ),
+                ),
+              ),
+              child: SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                title: Text(option.title),
+                value: value,
+                tileColor: Colors.transparent,
+                onChanged: (newValue) async {
+                  try {
+                    await settings.updateVisibility(option.key, newValue);
+                  } catch (error) {
+                    if (!mounted) {
+                      return;
+                    }
+
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          error.toString().replaceFirst('Exception: ', ''),
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+            if (index < settings.options.length - 1)
+              const Divider(height: 0, indent: 16, color: Color(0xFFE6E6E6)),
+          ],
+        );
+      },
     );
   }
 
@@ -179,7 +174,7 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
           _noSplashButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              "< Back",
+              '< Back',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
@@ -200,7 +195,10 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
                 ),
                 child: SvgPicture.asset(
                   'assets/icons/settings.svg',
-                  color: Colors.white,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -233,7 +231,7 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
                 children: [
                   Center(
                     child: Text(
-                      "Customize dashboard",
+                      'Customize dashboard',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -263,7 +261,7 @@ class _StudentSettingsPageState extends State<StudentSettingsPage> {
                 children: [
                   Center(
                     child: Text(
-                      "Other settings",
+                      'Other settings',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

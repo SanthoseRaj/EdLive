@@ -93,43 +93,43 @@ class _TeacherMessagePageState extends State<TeacherMessagePage> {
     });
   }
 
- Widget buildStudentTile(Student student) {
-  final isSelected = selectedStudents.any((s) => s["id"] == student.id);
+  Widget buildStudentTile(Student student) {
+    final isSelected = selectedStudents.any((s) => s["id"] == student.id);
 
-  return ListTile(
-    onTap: () {
-      setState(() {
-        if (isSelected) {
-          selectedStudents.removeWhere((s) => s["id"] == student.id);
-        } else {
-          selectedStudents.add({
-            "id": student.id,
-            "name": student.studentName,
-            "class": student.className,
-          });
-        }
-      });
-    },
-    title: Text(student.studentName),
-    subtitle: Text("ID: ${student.id}, Class: ${student.className}"),
-    trailing: Checkbox(
-      value: isSelected,
-      onChanged: (val) {
+    return ListTile(
+      onTap: () {
         setState(() {
-          if (val == true) {
+          if (isSelected) {
+            selectedStudents.removeWhere((s) => s["id"] == student.id);
+          } else {
             selectedStudents.add({
               "id": student.id,
               "name": student.studentName,
               "class": student.className,
             });
-          } else {
-            selectedStudents.removeWhere((s) => s["id"] == student.id);
           }
         });
       },
-    ),
-  );
-}
+      title: Text(student.studentName),
+      subtitle: Text("ID: ${student.id}, Class: ${student.className}"),
+      trailing: Checkbox(
+        value: isSelected,
+        onChanged: (val) {
+          setState(() {
+            if (val == true) {
+              selectedStudents.add({
+                "id": student.id,
+                "name": student.studentName,
+                "class": student.className,
+              });
+            } else {
+              selectedStudents.removeWhere((s) => s["id"] == student.id);
+            }
+          });
+        },
+      ),
+    );
+  }
 
   void showStudentDetails(Student student) {
     showDialog(
@@ -286,252 +286,453 @@ class _TeacherMessagePageState extends State<TeacherMessagePage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Scrollbar(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Your entire white container content goes here
-                              Text(
-                                "Write message History",
-                                style: TextStyle(
-                                  color: Colors.blue[800],
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Scrollbar(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Your entire white container content goes here
+                                    // Row(
+                                    //   children: [
+                                    //     Expanded(
+                                    //       child: ElevatedButton(
+                                    //         style: ElevatedButton.styleFrom(
+                                    //           backgroundColor: Colors.grey[400],
+                                    //           foregroundColor:
+                                    //               Colors.white, // ✅ White text
+                                    //         ),
+                                    //         onPressed: () {},
+                                    //         child: const Text("Cancel"),
+                                    //       ),
+                                    //     ),
+                                    //     const SizedBox(width: 10),
+                                    //     Expanded(
+                                    //       child: ElevatedButton(
+                                    //         style: ElevatedButton.styleFrom(
+                                    //           backgroundColor: Colors.blue,
+                                    //           foregroundColor: Colors.white,
+                                    //         ),
+                                    //         onPressed: () async {
+                                    //           final selectedSections = classSections
+                                    //               .where(
+                                    //                 (cls) =>
+                                    //                     selectedClassSections[cls
+                                    //                         .id] ==
+                                    //                     true,
+                                    //               )
+                                    //               .toList();
 
-                              // Main dropdown
-                              DropdownButtonFormField<String>(
-                                decoration: const InputDecoration(
-                                  labelText: 'To',
-                                  border: OutlineInputBorder(),
-                                ),
-                                value: selectedTo,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'Specific Classes',
-                                    child: Text('Specific Classes'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Select a group',
-                                    child: Text('Select a group'),
-                                  ),
-                                ],
-                                onChanged: (val) {
-                                  setState(() {
-                                    selectedTo = val;
-                                    showAccordion = val == "Specific Classes";
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 12),
+                                    //           if (selectedSections.isEmpty &&
+                                    //               selectedStudents.isEmpty) {
+                                    //             ScaffoldMessenger.of(
+                                    //               context,
+                                    //             ).showSnackBar(
+                                    //               const SnackBar(
+                                    //                 content: Text(
+                                    //                   "Select at least one student or class",
+                                    //                 ),
+                                    //               ),
+                                    //             );
+                                    //             return;
+                                    //           }
 
-                              // Accordion for Specific Classes
-                              if (showAccordion) _buildAccordion(),
+                                    //           if (messageController.text
+                                    //               .trim()
+                                    //               .isEmpty) {
+                                    //             ScaffoldMessenger.of(
+                                    //               context,
+                                    //             ).showSnackBar(
+                                    //               const SnackBar(
+                                    //                 content: Text(
+                                    //                   "Please enter a message",
+                                    //                 ),
+                                    //               ),
+                                    //             );
+                                    //             return;
+                                    //           }
 
-                              const SizedBox(height: 15),
-                              const Divider(thickness: 1),
-                              const SizedBox(height: 10),
-                              const Center(
-                                child: Text(
-                                  "OR",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
+                                    //           final token = await getToken();
+                                    //           if (token == null) return;
 
-                              // Student Search (always below dropdown)
-                              TextFormField(
-                                controller: studentSearchController,
-                                decoration: const InputDecoration(
-                                  labelText:
-                                      "Student's name, ID No, or parent's mobile number",
-                                  border: OutlineInputBorder(),
-                                ),
-                                onChanged: onSearch,
-                              ),
-                              const SizedBox(height: 10),
+                                    //           bool allSuccess = true;
 
-                              // Show matching results
-                              ...searchResults.map(buildStudentTile).toList(),
+                                    //           final channels = <String>[];
+                                    //           if (sendSMS) channels.add("sms");
+                                    //           if (sendWhatsApp)
+                                    //             channels.add("whatsapp");
+                                    //           if (sendEmail) channels.add("email");
 
-                              const SizedBox(height: 10),
+                                    //           if (channels.isEmpty) {
+                                    //             ScaffoldMessenger.of(
+                                    //               context,
+                                    //             ).showSnackBar(
+                                    //               const SnackBar(
+                                    //                 content: Text(
+                                    //                   "Select at least one channel",
+                                    //                 ),
+                                    //               ),
+                                    //             );
+                                    //             return;
+                                    //           }
 
-                              // Selected students chips
-                              if (selectedStudents.isNotEmpty)
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: selectedStudents.map((student) {
-                                    return Chip(
-                                      label: Text(student["name"] ?? ""),
-                                      deleteIcon: const Icon(Icons.close),
-                                      onDeleted: () {
+                                    //           // ✅ Send to selected individual students (ONLY ONCE)
+                                    //           for (var student in selectedStudents) {
+                                    //             final success =
+                                    //                 await MessageService.sendMessage(
+                                    //                   token: token,
+                                    //                   studentId: student["id"],
+                                    //                   messageText:
+                                    //                       messageController.text,
+                                    //                   isAppreciation: true,
+                                    //                   isMeetingRequest: false,
+                                    //                   channels: channels,
+                                    //                 );
+
+                                    //             if (!success) allSuccess = false;
+                                    //           }
+
+                                    //           // 🔜 Future: class section students send logic here
+
+                                    //           if (allSuccess) {
+                                    //             setState(() {
+                                    //               messageController.clear();
+                                    //               selectedStudents.clear();
+                                    //               studentSearchController.clear();
+                                    //               searchResults.clear();
+                                    //               selectedClassSections.updateAll(
+                                    //                 (key, value) => false,
+                                    //               );
+                                    //             });
+
+                                    //             ScaffoldMessenger.of(
+                                    //               context,
+                                    //             ).showSnackBar(
+                                    //               const SnackBar(
+                                    //                 content: Text(
+                                    //                   "Messages sent successfully",
+                                    //                 ),
+                                    //               ),
+                                    //             );
+                                    //           } else {
+                                    //             ScaffoldMessenger.of(
+                                    //               context,
+                                    //             ).showSnackBar(
+                                    //               const SnackBar(
+                                    //                 content: Text(
+                                    //                   "Some messages failed",
+                                    //                 ),
+                                    //               ),
+                                    //             );
+                                    //           }
+                                    //         },
+                                    //         child: const Text("Send"),
+                                    //       ),
+                                    //     ),
+                                    //   ],
+                                    // ),
+                                    Text(
+                                      "Write message History",
+                                      style: TextStyle(
+                                        color: Colors.blue[800],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Main dropdown
+                                    DropdownButtonFormField<String>(
+                                      decoration: const InputDecoration(
+                                        labelText: 'To',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      value: selectedTo,
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: 'Specific Classes',
+                                          child: Text('Specific Classes'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Select a group',
+                                          child: Text('Select a group'),
+                                        ),
+                                      ],
+                                      onChanged: (val) {
                                         setState(() {
-                                          selectedStudents.remove(student);
+                                          selectedTo = val;
+                                          showAccordion =
+                                              val == "Specific Classes";
                                         });
                                       },
-                                    );
-                                  }).toList(),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Accordion for Specific Classes
+                                    if (showAccordion) _buildAccordion(),
+
+                                    const SizedBox(height: 15),
+                                    const Divider(thickness: 1),
+                                    const SizedBox(height: 10),
+                                    const Center(
+                                      child: Text(
+                                        "OR",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Student Search (always below dropdown)
+                                    TextFormField(
+                                      controller: studentSearchController,
+                                      decoration: const InputDecoration(
+                                        labelText:
+                                            "Student's name, ID No, or parent's mobile number",
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onChanged: onSearch,
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Show matching results
+                                    ...searchResults
+                                        .map(buildStudentTile)
+                                        .toList(),
+
+                                    const SizedBox(height: 10),
+
+                                    // Selected students chips
+                                    if (selectedStudents.isNotEmpty)
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: selectedStudents.map((
+                                          student,
+                                        ) {
+                                          return Chip(
+                                            label: Text(student["name"] ?? ""),
+                                            deleteIcon: const Icon(Icons.close),
+                                            onDeleted: () {
+                                              setState(() {
+                                                selectedStudents.remove(
+                                                  student,
+                                                );
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+
+                                    const SizedBox(height: 15),
+
+                                    // Compose message
+                                    TextFormField(
+                                      controller: messageController,
+                                      maxLines: 4,
+                                      decoration: const InputDecoration(
+                                        labelText: "Type your message here",
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onTap: closeAccordion,
+                                    ),
+                                    const SizedBox(height: 15),
+
+                                    // Send options
+                                    Row(
+                                      children: [
+                                        Checkbox(
+                                          value: sendSMS,
+                                          onChanged: (val) =>
+                                              setState(() => sendSMS = val!),
+                                        ),
+                                        const Text("SMS"),
+                                        const SizedBox(width: 8),
+                                        Checkbox(
+                                          value: sendWhatsApp,
+                                          onChanged: (val) => setState(
+                                            () => sendWhatsApp = val!,
+                                          ),
+                                        ),
+                                        const Text("Whatsapp"),
+                                        const SizedBox(width: 8),
+                                        Checkbox(
+                                          value: sendEmail,
+                                          onChanged: (val) =>
+                                              setState(() => sendEmail = val!),
+                                        ),
+                                        const Text("Email"),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // File Upload
+                                    // OutlinedButton(
+                                    //   onPressed: () {},
+                                    //   child: const Text("Select file"),
+                                    // ),
+                                    // const SizedBox(height: 8),
+                                    // const Text("Document.pdf"),
+                                    // const Text("Image.jpg"),
+                                    const SizedBox(height: 20),
+
+                                    // Buttons
+                                  ],
                                 ),
-
-                              const SizedBox(height: 15),
-
-                              // Compose message
-                              TextFormField(
-                                controller: messageController,
-                                maxLines: 4,
-                                decoration: const InputDecoration(
-                                  labelText: "Type your message here",
-                                  border: OutlineInputBorder(),
-                                ),
-                                onTap: closeAccordion,
                               ),
-                              const SizedBox(height: 15),
-
-                              // Send options
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: sendSMS,
-                                    onChanged: (val) =>
-                                        setState(() => sendSMS = val!),
-                                  ),
-                                  const Text("SMS"),
-                                  const SizedBox(width: 8),
-                                  Checkbox(
-                                    value: sendWhatsApp,
-                                    onChanged: (val) =>
-                                        setState(() => sendWhatsApp = val!),
-                                  ),
-                                  const Text("Whatsapp"),
-                                  const SizedBox(width: 8),
-                                  Checkbox(
-                                    value: sendEmail,
-                                    onChanged: (val) =>
-                                        setState(() => sendEmail = val!),
-                                  ),
-                                  const Text("Email"),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-
-                              // File Upload
-                              OutlinedButton(
-                                onPressed: () {},
-                                child: const Text("Select file"),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text("Document.pdf"),
-                              const Text("Image.jpg"),
-                              const SizedBox(height: 20),
-
-                           // Buttons
-Row(
-  children: [
-    Expanded(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[400],
-          foregroundColor: Colors.white, // ✅ White text
-        ),
-        onPressed: () {},
-        child: const Text("Cancel"),
-      ),
-    ),
-    const SizedBox(width: 10),
-    Expanded(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white, // ✅ White text
-        ),
-        onPressed: () async {
-          final selectedSections = classSections
-              .where((cls) => selectedClassSections[cls.id] == true)
-              .toList();
-
-          if (selectedSections.isEmpty && selectedStudents.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Select at least one student or class")),
-            );
-            return;
-          }
-
-          final token = await getToken();
-          if (token == null) return;
-
-          // Send to selected individual students
-          for (var student in selectedStudents) {
-            final channels = <String>[];
-            if (sendSMS) channels.add("sms");
-            if (sendWhatsApp) channels.add("whatsapp");
-            if (sendEmail) channels.add("email");
-
-            await MessageService.sendMessage(
-              token: token,
-              studentId: student["id"],
-              messageText: messageController.text,
-              isAppreciation: true,
-              isMeetingRequest: false,
-              channels: channels,
-            );
-          }
-
-          // TODO: Send to students in selected class sections
-          for (var cls in selectedSections) {
-            // Call your API or fetch students by class/section
-            // Then send messages to each student like above
-          }
-
-          bool allSuccess = true;
-
-          for (var student in selectedStudents) {
-            if (student["guardian_name"] == null || student["guardian_name"].isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    "Cannot send message to ${student["name"]}: Guardian info missing",
-                  ),
-                ),
-              );
-              allSuccess = false;
-              continue;
-            }
-
-            final channels = <String>[];
-            if (sendSMS) channels.add("sms");
-            if (sendWhatsApp) channels.add("whatsapp");
-            if (sendEmail) channels.add("email");
-
-            final success = await MessageService.sendMessage(
-              token: token,
-              studentId: student["id"],
-              messageText: messageController.text,
-              isAppreciation: true,
-              isMeetingRequest: false,
-              channels: channels,
-            );
-
-            if (!success) allSuccess = false;
-          }
-
-          if (allSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Messages sent successfully")),
-            );
-          }
-        },
-        child: const Text("Send"),
-      ),
-    ),
-  ],
-)
-  ],
+                            ),
                           ),
-                        ),
+
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey[400],
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        messageController.clear();
+                                        selectedStudents.clear();
+                                        studentSearchController.clear();
+                                        searchResults.clear();
+                                        selectedClassSections.updateAll(
+                                          (k, v) => false,
+                                        );
+                                      });
+                                    },
+                                    child: const Text("Cancel"),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: () async {
+                                      final selectedSections = classSections
+                                          .where(
+                                            (cls) =>
+                                                selectedClassSections[cls.id] ==
+                                                true,
+                                          )
+                                          .toList();
+
+                                      if (selectedSections.isEmpty &&
+                                          selectedStudents.isEmpty) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Select at least one student or class",
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      if (messageController.text
+                                          .trim()
+                                          .isEmpty) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Please enter a message",
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      final token = await getToken();
+                                      if (token == null) return;
+
+                                      bool allSuccess = true;
+
+                                      final channels = <String>[];
+                                      if (sendSMS) channels.add("sms");
+                                      if (sendWhatsApp)
+                                        channels.add("whatsapp");
+                                      if (sendEmail) channels.add("email");
+
+                                      if (channels.isEmpty) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Select at least one channel",
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      for (var student in selectedStudents) {
+                                        final success =
+                                            await MessageService.sendMessage(
+                                              token: token,
+                                              studentId: student["id"],
+                                              messageText:
+                                                  messageController.text,
+                                              isAppreciation: true,
+                                              isMeetingRequest: false,
+                                              channels: channels,
+                                            );
+
+                                        if (!success) allSuccess = false;
+                                      }
+
+                                      if (allSuccess) {
+                                        setState(() {
+                                          messageController.clear();
+                                          selectedStudents.clear();
+                                          studentSearchController.clear();
+                                          searchResults.clear();
+                                          selectedClassSections.updateAll(
+                                            (k, v) => false,
+                                          );
+                                        });
+
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Messages sent successfully",
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Some messages failed",
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: const Text("Send"),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

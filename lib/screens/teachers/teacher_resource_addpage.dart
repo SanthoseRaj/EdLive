@@ -1,16 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:school_app/widgets/teacher_app_bar.dart';
-import 'teacher_menu_drawer.dart';
 
+import 'teacher_menu_drawer.dart';
 import '../../models/teacher_resource_class_model.dart';
 import '../../models/teacher_resource_subject_model.dart';
+import '../../services/teacher_resource_add_service.dart';
 import '../../services/teacher_resource_classsection_service.dart';
 import '../../services/teacher_resource_subject_service.dart';
-import 'package:school_app/services/teacher_resource_add_service.dart';
+
+class TeacherResourceAddResult {
+  final bool didAdd;
+  final int? classId;
+  final int? subjectId;
+
+  const TeacherResourceAddResult({
+    required this.didAdd,
+    this.classId,
+    this.subjectId,
+  });
+}
 
 class TeacherResourceAddPage extends StatefulWidget {
-  const TeacherResourceAddPage({super.key});
+  final int? initialClassId;
+  final int? initialSubjectId;
+
+  const TeacherResourceAddPage({
+    super.key,
+    this.initialClassId,
+    this.initialSubjectId,
+  });
 
   @override
   State<TeacherResourceAddPage> createState() => _TeacherResourceAddPageState();
@@ -30,9 +49,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
   final TextEditingController descController = TextEditingController();
   final TextEditingController linkController = TextEditingController();
 
-
-
-
   @override
   void initState() {
     super.initState();
@@ -40,17 +56,31 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
     loadSubjects();
   }
 
+  @override
+  void dispose() {
+    titleController.dispose();
+    descController.dispose();
+    linkController.dispose();
+    super.dispose();
+  }
+
   Future<void> loadClasses() async {
     try {
       final classes = await TeacherResourceService.fetchTeacherClasses();
+      if (!mounted) return;
+
       setState(() {
         classList = classes;
         if (classes.isNotEmpty) {
-          selectedClass = classes.first;
+          selectedClass = classes.firstWhere(
+            (cls) => cls.classId == widget.initialClassId,
+            orElse: () => classes.first,
+          );
         }
         isClassLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => isClassLoading = false);
       debugPrint("Error fetching classes: $e");
     }
@@ -59,23 +89,74 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
   Future<void> loadSubjects() async {
     try {
       final subjects = await SubjectResourceService.fetchTeacherSubjects();
+      if (!mounted) return;
+
       setState(() {
         subjectList = subjects;
         if (subjects.isNotEmpty) {
-          selectedSubject = subjects.first;
+          selectedSubject = subjects.firstWhere(
+            (subj) => subj.subjectId == widget.initialSubjectId,
+            orElse: () => subjects.first,
+          );
         }
         isSubjectLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => isSubjectLoading = false);
       debugPrint("Error fetching subjects: $e");
     }
   }
 
+  Future<void> _submitResource() async {
+    if (titleController.text.isEmpty ||
+        descController.text.isEmpty ||
+        selectedClass == null ||
+        selectedSubject == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields")),
+      );
+      return;
+    }
+
+    try {
+      final success = await TeacherResourceAddService.addResource(
+        title: titleController.text.trim(),
+        description: descController.text.trim(),
+        webLinks: linkController.text.trim().isNotEmpty
+            ? [linkController.text.trim()]
+            : [],
+        classId: selectedClass!.classId,
+        subjectId: selectedSubject!.subjectId,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Resource added successfully")),
+        );
+        Navigator.pop(
+          context,
+          TeacherResourceAddResult(
+            didAdd: true,
+            classId: selectedClass!.classId,
+            subjectId: selectedSubject!.subjectId,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to add resource: $e")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    const Color backgroundColor = Color(0xFFD3C4D6); // purple bg
-    const Color headerTextColor = Color(0xFF2D3E9A); // dark blue
+    const Color backgroundColor = Color(0xFFD3C4D6);
+    const Color headerTextColor = Color(0xFF2D3E9A);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -87,7 +168,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back + Title Row
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: const Text(
@@ -96,7 +176,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                 ),
               ),
               const SizedBox(height: 6),
-
               Row(
                 children: [
                   Container(
@@ -106,7 +185,10 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                       'assets/icons/resources.svg',
                       height: 20,
                       width: 20,
-                      color: Colors.white,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -120,10 +202,7 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // White container form
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
@@ -134,13 +213,11 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 🔹 Scrollable form fields
                       Expanded(
                         child: SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Class Row
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -179,17 +256,14 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                                               items: classList.map((cls) {
                                                 return DropdownMenuItem(
                                                   value: cls,
-                                                  child: Text(
-                                                    cls.className ?? "",
-                                                  ),
+                                                  child: Text(cls.className),
                                                 );
                                               }).toList(),
                                               onChanged: (val) {
-                                                if (val != null) {
-                                                  setState(
-                                                    () => selectedClass = val,
-                                                  );
-                                                }
+                                                if (val == null) return;
+                                                setState(() {
+                                                  selectedClass = val;
+                                                });
                                               },
                                             ),
                                     ),
@@ -197,8 +271,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-
-                              // Subject Row
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -237,17 +309,14 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                                               items: subjectList.map((subj) {
                                                 return DropdownMenuItem(
                                                   value: subj,
-                                                  child: Text(
-                                                    subj.subjectName ?? "",
-                                                  ),
+                                                  child: Text(subj.subjectName),
                                                 );
                                               }).toList(),
                                               onChanged: (val) {
-                                                if (val != null) {
-                                                  setState(
-                                                    () => selectedSubject = val,
-                                                  );
-                                                }
+                                                if (val == null) return;
+                                                setState(() {
+                                                  selectedSubject = val;
+                                                });
                                               },
                                             ),
                                     ),
@@ -255,8 +324,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-
-                              // Title
                               const Text(
                                 "Resource Title:",
                                 style: TextStyle(fontSize: 14),
@@ -274,8 +341,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                                 ),
                               ),
                               const SizedBox(height: 12),
-
-                              // Description
                               const Text(
                                 "Description:",
                                 style: TextStyle(fontSize: 14),
@@ -294,8 +359,6 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                                 ),
                               ),
                               const SizedBox(height: 12),
-
-                              // Links
                               const Text(
                                 "Web Links:",
                                 style: TextStyle(fontSize: 14),
@@ -316,10 +379,7 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
-                      // 🔹 Buttons always at bottom
                       Row(
                         children: [
                           Expanded(
@@ -341,62 +401,28 @@ class _TeacherResourceAddPageState extends State<TeacherResourceAddPage> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                         Expanded(
-  child: GestureDetector(
-    onTap: () async {
-      if (titleController.text.isEmpty ||
-          descController.text.isEmpty ||
-          selectedClass == null ||
-          selectedSubject == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill all required fields")),
-        );
-        return;
-      }
-
-      try {
-        final success = await TeacherResourceAddService.addResource(
-          title: titleController.text.trim(),
-          description: descController.text.trim(),
-          webLinks: linkController.text.trim().isNotEmpty
-              ? [linkController.text.trim()]
-              : [],
-          // ✅ use model fields that actually exist
-          classId: selectedClass!.classId,       // <— not 'id'
-          subjectId: selectedSubject!.subjectId, // <— not 'id'
-        );
-
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Resource added successfully ✅")),
-          );
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to add resource: $e")),
-        );
-      }
-    },
-    child: Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: const Color(0xFF29ABE2),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: const Center(
-        child: Text(
-          "Add",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    ),
-  ),
-),
-  ],
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _submitResource,
+                              child: Container(
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF29ABE2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    "Add",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

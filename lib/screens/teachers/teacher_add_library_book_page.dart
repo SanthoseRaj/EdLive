@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:intl/intl.dart';
 
 import 'package:school_app/models/teacher_student_classsection.dart';
 import '../../models/teacher_library_book.dart';
@@ -35,10 +34,15 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
     with SingleTickerProviderStateMixin {
   int? selectedBookId;
   List<dynamic> searchResults = [];
+  final Set<String> _viewedLibraryBookIds = <String>{};
 
   late TabController _tabController;
 
   String? _authToken;
+
+  // Add this flag to prevent multiple fetches
+  bool _booksLoaded = false;
+  bool _membersLoaded = false;
 
   // Search controllers
   final _searchTitleController = TextEditingController();
@@ -79,31 +83,59 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
     _tabController = TabController(length: 6, vsync: this);
     _loadTokenAndData();
 
-    _tabController.addListener(() async {
-      if (!_tabController.indexIsChanging) {
-        // When All Books tab is selected
-        if (_tabController.index == 2) {
-          final provider = Provider.of<LibraryBooksListProvider>(
-            context,
-            listen: false,
-          );
-          await provider.fetchBooks();
+    // Use addPostFrameCallback to ensure widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _markAllBooksViewed();
+    });
 
-          // ✅ Mark each book as viewed only when All Books tab is opened
-          for (var book in provider.books) {
-            if (book["id"] != null) {
-              _markLibraryViewed(book["id"].toString());
+    _tabController.addListener(() {
+      // Use a microtask to avoid calling during build
+      if (!_tabController.indexIsChanging) {
+        Future.microtask(() async {
+          if (!mounted) return;
+
+          // When All Books tab is selected
+          if (_tabController.index == 2) {
+            final provider = Provider.of<LibraryBooksListProvider>(
+              context,
+              listen: false,
+            );
+
+            // This will use cached data if available
+            await provider.fetchBooks();
+
+            // Mark each book as viewed
+            for (var book in provider.books) {
+              if (book["id"] != null) {
+                _markLibraryViewed(book["id"].toString());
+              }
             }
           }
-        }
-
-        // When Member Status tab is selected
-        // if (_tabController.index == 3) {
-        //   Provider.of<LibraryStatusProvider>(context, listen: false)
-        //       .fetchStatus();
-        // }
+        });
       }
     });
+  }
+
+  Future<void> _markAllBooksViewed() async {
+    final provider = Provider.of<LibraryBooksListProvider>(
+      context,
+      listen: false,
+    );
+
+    if (provider.books.isEmpty) {
+      await provider.fetchBooks();
+    }
+
+    for (final book in provider.books) {
+      final rawBookId = book is Map<String, dynamic> ? book['id'] : null;
+      final bookId = rawBookId?.toString();
+      if (bookId == null || bookId.isEmpty) {
+        continue;
+      }
+
+      await _markLibraryViewed(bookId);
+    }
   }
 
   @override
@@ -139,33 +171,27 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
   }
 
   Future<void> _markLibraryViewed(String bookId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+    if (_viewedLibraryBookIds.contains(bookId)) return;
 
+    final token = _authToken; // 🔥 reuse token (already loaded)
+
+    try {
       final response = await http.post(
         Uri.parse(
-          'https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed',
+          'https://schoolmanagement.canadacentral.cloudapp.azure.com/api/dashboard/viewed',
         ),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          "item_type": "library", // 👈 use library
-          "item_id": bookId,
-        }),
+        body: jsonEncode({"item_type": "library", "item_id": bookId}),
       );
 
       if (response.statusCode == 200) {
-        print("✅ Marked book $bookId as viewed");
-      } else {
-        print("❌ Failed: ${response.body}");
+        _viewedLibraryBookIds.add(bookId);
       }
-    } catch (e) {
-      print("⚠️ Error: $e");
-    }
+    } catch (_) {}
   }
 
   Future<void> _loadTokenAndData() async {
@@ -675,37 +701,99 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
 
   Widget _buildBooksList() {
     final provider = Provider.of<LibraryBooksListProvider>(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (provider.isLoading)
-          const Center(child: CircularProgressIndicator())
-        else if (provider.error != null)
-          Text("Error: ${provider.error}")
-        else if (provider.books.isNotEmpty)
-          ...provider.books.map(
-            (book) => ListTile(
-              leading: const Icon(
-                Icons.book_outlined,
-                color: Color(0xFF2E3192),
-              ),
-              title: Text(book["title"] ?? '-'),
-              subtitle: Text("Author: ${book["author"] ?? '-'}"),
-              trailing: Text("Qty: ${book["available_quantity"] ?? 0}"),
-              onTap: () {
-                setState(() {
-                  selectedBookId = book["id"];
-                });
-                Provider.of<LibraryBookDetailProvider>(
-                  context,
-                  listen: false,
-                ).fetchBook(book["id"]);
-                _tabController.animateTo(1); // 🔥 switch to Book Details
-              },
+        // Add a refresh button
+        if (provider.books.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () async {
+                    await provider.refreshBooks();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Books list refreshed"),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text("Refresh"),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF2E3192),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // Loading state
+        if (provider.isLoading && provider.books.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(),
             ),
           )
+        // Error state (only if no cached data)
+        else if (provider.error != null && provider.books.isEmpty)
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Error: ${provider.error}"),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => provider.fetchBooks(),
+                  child: const Text("Retry"),
+                ),
+              ],
+            ),
+          )
+        // Empty state
+        else if (provider.books.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text("No books available"),
+            ),
+          )
+        // Books list
         else
-          const Center(child: Text("No books available")),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: provider.books.length,
+            itemBuilder: (context, index) {
+              final book = provider.books[index];
+              return ListTile(
+                leading: const Icon(
+                  Icons.book_outlined,
+                  color: Color(0xFF2E3192),
+                ),
+                title: Text(book["title"] ?? '-'),
+                subtitle: Text("Author: ${book["author"] ?? '-'}"),
+                trailing: Text("Qty: ${book["available_quantity"] ?? 0}"),
+                onTap: () {
+                  setState(() {
+                    selectedBookId = book["id"];
+                  });
+                  Provider.of<LibraryBookDetailProvider>(
+                    context,
+                    listen: false,
+                  ).fetchBook(book["id"]);
+                  _tabController.animateTo(1); // 🔥 switch to Book Details
+                },
+              );
+            },
+          ),
       ],
     );
   }
@@ -851,69 +939,82 @@ class _AddLibraryBookPageState extends State<AddLibraryBookPage>
     );
   }
 
-  Widget _buildAddCopyForm() {
-    final provider = Provider.of<LibraryCopyProvider>(context);
-    final booksProvider = Provider.of<LibraryBooksListProvider>(context);
+  
 
-    // Ensure books list is fetched
-    if (booksProvider.books.isEmpty && !booksProvider.isLoading) {
-      booksProvider.fetchBooks();
-    }
+ Widget _buildAddCopyForm() {
+  final provider = Provider.of<LibraryCopyProvider>(context);
+  final booksProvider = Provider.of<LibraryBooksListProvider>(context);
 
-    return Form(
-      key: _formKeyCopy,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          booksProvider.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : DropdownButtonFormField<int>(
-                  decoration: InputDecoration(
-                    labelText: "Select Book",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  items: booksProvider.books.map((book) {
-                    return DropdownMenuItem<int>(
-                      value: book["id"],
-                      child: Text(book["title"] ?? "Untitled"),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      _bookIdController.text = value.toString();
-                    }
-                  },
-                  validator: (val) {
-                    if (val == null) return "Please select a book";
-                    return null;
-                  },
-                ),
-          const SizedBox(height: 12),
-          _buildTextField(_barcodeController, "Barcode"),
-          _buildTextField(_conditionController, "Condition"),
-          const SizedBox(height: 12),
-          provider.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton.icon(
-                  onPressed: _submitCopy,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add Copy"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-        ],
+  // Show loading if books are being fetched
+  if (booksProvider.isLoading) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  // Show message if no books available
+  if (booksProvider.books.isEmpty) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Text(
+          "No books available. Please add a book first.",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
       ),
     );
   }
 
+  return Form(
+    key: _formKeyCopy,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DropdownButtonFormField<int>(
+          decoration: InputDecoration(
+            labelText: "Select Book",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          items: booksProvider.books.map((book) {
+            return DropdownMenuItem<int>(
+              value: book["id"],
+              child: Text(book["title"] ?? "Untitled"),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) {
+              _bookIdController.text = value.toString();
+            }
+          },
+          validator: (val) {
+            if (val == null) return "Please select a book";
+            return null;
+          },
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(_barcodeController, "Barcode"),
+        _buildTextField(_conditionController, "Condition"),
+        const SizedBox(height: 12),
+        provider.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ElevatedButton.icon(
+                onPressed: _submitCopy,
+                icon: const Icon(Icons.add),
+                label: const Text("Add Copy"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+      ],
+    ),
+  );
+}
   Future<void> _pickStartDate() async {
     final pickedDate = await showDatePicker(
       context: context,

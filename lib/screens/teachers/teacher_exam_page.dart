@@ -6,7 +6,6 @@ import 'teacher_exam_announce_class_test_page.dart';
 
 import 'package:school_app/models/class_section.dart';
 import 'package:school_app/models/teacher_exam_model.dart';
-import 'package:school_app/services/teacher_exam_service.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -137,7 +136,10 @@ class _TeacherExamPageState extends State<TeacherExamPage>
                       ),
                       child: SvgPicture.asset(
                         'assets/icons/exams.svg',
-                        color: Colors.white,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -157,140 +159,145 @@ class _TeacherExamPageState extends State<TeacherExamPage>
 
           // White Content Box
           Expanded(
-            child: Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.all(12),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  height: MediaQuery.of(context).size.height * 0.69,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      // Class Dropdown Row
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Select your class',
-                              style: TextStyle(fontSize: 14),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 100,
-                              height: 40,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFCCCCCC),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: isLoading
-                                  ? const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : DropdownButton<ClassSection>(
-                                      value: selectedClass,
-                                      isExpanded: false,
-                                      underline: const SizedBox(),
-                                      icon: const Icon(Icons.arrow_drop_down),
-                                      dropdownColor: Colors.white,
-                                      onChanged: (value) async {
-                                        if (value != null) {
-                                          setState(() => selectedClass = value);
-                                          fetchExamsForClass(
-                                            value.id.toString(),
-                                          );
-
-                                          final prefs =
-                                              await SharedPreferences.getInstance();
-                                          await prefs.setString(
-                                            'classId',
-                                            value.id.toString(),
-                                          );
-                                          await prefs.setString(
-                                            'className',
-                                            value.fullName,
-                                          ); // ✅ store class name too
-                                        }
-                                      },
-
-                                      items: classList.map((cls) {
-                                        return DropdownMenuItem(
-                                          value: cls,
-                                          child: Text(
-                                            cls.fullName,
-                                            style: const TextStyle(
-                                              color: Color(0xFF29ABE2),
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                            ),
-                            const Spacer(),
-                            // IconButton(
-                            //   icon: const Icon(Icons.more_horiz),
-                            //   onPressed: () {},
-                            // ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Tabs
-                      TabBar(
-                        controller: _tabController,
-                        indicatorColor: Colors.blue,
-                        labelColor: Colors.black,
-                        tabs: const [
-                          Tab(text: 'Class tests'),
-                          Tab(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('Other Exams'),
-                                SizedBox(width: 4),
-                                // CircleAvatar(
-                                //   radius: 8,
-                                //   backgroundColor: Colors.purple,
-                                //   child: Text(
-                                //     '1',
-                                //     style: TextStyle(
-                                //       fontSize: 10,
-                                //       color: Colors.white,
-                                //     ),
-                                //   ),
-                                // ),
-                              ],
-                            ),
+            child: Container(
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  // Class Dropdown Row
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        const Flexible(
+                          child: Text(
+                            'Select your class',
+                            style: TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 110,
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFCCCCCC),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: isLoading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : DropdownButton<ClassSection>(
+                                  value: selectedClass,
+                                  isExpanded: true,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  dropdownColor: Colors.white,
+                                  selectedItemBuilder: (context) {
+                                    return classList.map((cls) {
+                                      return Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          cls.fullName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Color(0xFF29ABE2),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                  onChanged: (value) async {
+                                    if (value != null) {
+                                      setState(() => selectedClass = value);
+                                      fetchExamsForClass(value.id.toString());
 
-                      // TabBarView
-                      Expanded(
-                        child: TabBarView(
-                          controller: _tabController,
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      await prefs.setString(
+                                        'classId',
+                                        value.id.toString(),
+                                      );
+                                      await prefs.setString(
+                                        'className',
+                                        value.fullName,
+                                      ); // ✅ store class name too
+                                    }
+                                  },
+
+                                  items: classList.map((cls) {
+                                    return DropdownMenuItem(
+                                      value: cls,
+                                      child: Text(
+                                        cls.fullName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Color(0xFF29ABE2),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Tabs
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: Colors.blue,
+                    labelColor: Colors.black,
+                    tabs: const [
+                      Tab(text: 'Class tests'),
+                      Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            _buildClassTestsTab(),
-                            const Center(
-                              child: Text('Other Exams Coming Soon'),
-                            ),
+                            Text('Other Exams'),
+                            SizedBox(width: 4),
+                            // CircleAvatar(
+                            //   radius: 8,
+                            //   backgroundColor: Colors.purple,
+                            //   child: Text(
+                            //     '1',
+                            //     style: TextStyle(
+                            //       fontSize: 10,
+                            //       color: Colors.white,
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+
+                  // TabBarView
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildClassTestsTab(),
+                        const Center(child: Text('Other Exams Coming Soon')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -319,14 +326,15 @@ class _TeacherExamPageState extends State<TeacherExamPage>
               width: 220,
               child: ElevatedButton(
                 onPressed: () async {
-                await Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => AnnounceClassTestPage(
-      className: selectedClass?.fullName ?? '', // display in UI
-    ),
-  ),
-);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AnnounceClassTestPage(
+                        className:
+                            selectedClass?.fullName ?? '', // display in UI
+                      ),
+                    ),
+                  );
 
                   // ✅ Refresh exam list automatically when returning
                   if (selectedClass != null) {
@@ -360,7 +368,7 @@ class _TeacherExamPageState extends State<TeacherExamPage>
                 const Divider(color: Color(0xFFB3B3B3), thickness: 1),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -422,18 +430,21 @@ class _TeacherExamPageState extends State<TeacherExamPage>
               'assets/icons/pencil.svg',
               height: 20,
               width: 20,
-              color: Colors.black,
+              colorFilter: const ColorFilter.mode(
+                Colors.black,
+                BlendMode.srcIn,
+              ),
             ),
             onPressed: () async {
-             await Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => AnnounceClassTestPage(
-      examId: exam.id,
-      className: selectedClass?.fullName ?? '',
-    ),
-  ),
-);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AnnounceClassTestPage(
+                    examId: exam.id,
+                    className: selectedClass?.fullName ?? '',
+                  ),
+                ),
+              );
 
               // ✅ Auto-refresh after editing
               if (selectedClass != null) {

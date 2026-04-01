@@ -44,7 +44,6 @@ class _DayFoodTabState extends State<DayFoodTab> {
     _visibleDates = List.generate(30, (i) => _startDate.add(Duration(days: i)));
   }
 
-
   void _centerCurrentDate() {
     final index = _visibleDates.indexWhere(
       (d) =>
@@ -65,8 +64,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     }
   }
 
-
- void _nextMonth() {
+  void _nextMonth() {
     setState(() {
       _selectedMonth = DateTime(
         _selectedMonth.year,
@@ -86,8 +84,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     });
   }
 
-
-    void _toggleFood(String key, bool value) {
+  void _toggleFood(String key, bool value) {
     final dateKey = DateFormat("yyyy-MM-dd").format(_selectedDate);
 
     setState(() {
@@ -101,8 +98,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     });
   }
 
-
-    void _previousMonth() {
+  void _previousMonth() {
     setState(() {
       _selectedMonth = DateTime(
         _selectedMonth.year,
@@ -122,11 +118,11 @@ class _DayFoodTabState extends State<DayFoodTab> {
     });
   }
 
- String get _monthYear {
+  String get _monthYear {
     return "${_monthNames[_selectedMonth.month - 1]}. ${_selectedMonth.year}";
   }
 
- static const List<String> _monthNames = [
+  static const List<String> _monthNames = [
     "Jan",
     "Feb",
     "Mar",
@@ -143,10 +139,10 @@ class _DayFoodTabState extends State<DayFoodTab> {
 
   // ... (Copy all the day-specific methods from your original code)
   // _centerCurrentDate, _fetchScheduleForDate, _submitFoodForSelectedDate,
-  // _fetchMenu, _toggleFood, fetchWeekdays, _loadData, _previousMonth, 
+  // _fetchMenu, _toggleFood, fetchWeekdays, _loadData, _previousMonth,
   // _nextMonth, _previousWeek, _nextWeek, get _monthYear, etc.
 
-    Future<void> _fetchMenu() async {
+  Future<void> _fetchMenu() async {
     setState(() => _loading = true);
 
     try {
@@ -183,7 +179,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     setState(() => _loading = false);
   }
 
- Future<void> _submitFoodForSelectedDate() async {
+  Future<void> _submitFoodForSelectedDate() async {
     final dateKey = DateFormat("yyyy-MM-dd").format(_selectedDate);
     final selections = _foodSelectionsByDate[dateKey];
 
@@ -234,14 +230,14 @@ class _DayFoodTabState extends State<DayFoodTab> {
       );
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("✅ Order Booked for $dateKey")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("✅ Order Booked for $dateKey")));
       } else {
         print("❌ Error ${response.statusCode}: ${response.body}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to Book order")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Failed to Book order")));
       }
     } catch (e) {
       print("Submit API Error: $e");
@@ -253,8 +249,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     }
   }
 
-
-    Future<void> _loadData() async {
+  Future<void> _loadData() async {
     try {
       final days = await fetchWeekdays();
       setState(() {
@@ -268,7 +263,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     }
   }
 
- Future<void> _fetchScheduleForDate(DateTime date) async {
+  Future<void> _fetchScheduleForDate(DateTime date) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("auth_token") ?? "";
@@ -312,7 +307,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     }
   }
 
- Future<List<String>> fetchWeekdays() async {
+  Future<List<String>> fetchWeekdays() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
@@ -344,71 +339,79 @@ class _DayFoodTabState extends State<DayFoodTab> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _weeklyMenu == null
-                  ? const Center(child: Text("No menu available"))
-                  : Builder(
-                      builder: (context) {
-                        final weekdayIndex = _selectedDate.weekday % 7;
-                        final dayMenu = _weeklyMenu?["$weekdayIndex"];
+              ? const Center(child: Text("No menu available"))
+              : Builder(
+                  builder: (context) {
+                    final weekdayIndex = _selectedDate.weekday % 7;
+                    final dayMenu = _weeklyMenu?["$weekdayIndex"];
+                    final dateKey = DateFormat(
+                      "yyyy-MM-dd",
+                    ).format(_selectedDate);
 
-                        if (dayMenu == null ||
-                            (dayMenu["breakfast"] == null &&
-                                dayMenu["lunch"] == null &&
-                                dayMenu["snacks"] == null)) {
-                          return _buildNoMenuCard();
-                        }
+                    if (dayMenu == null ||
+                        (dayMenu["breakfast"] == null &&
+                            dayMenu["lunch"] == null &&
+                            dayMenu["snacks"] == null)) {
+                      return _buildNoMenuCard();
+                    }
 
-                  return ListView(
-  padding: const EdgeInsets.all(16),
-  children: [
-    FoodTile(
-      keyName: "Breakfast-$weekdayIndex",
-      title: dayMenu["breakfast"] != null
-          ? "Breakfast (${dayMenu["breakfast"]["price"]}₹)"
-          : "Breakfast",
-      time: "8 : 30 am - 09 : 30 am",
-      items: dayMenu["breakfast"]?["items"] ?? [],
-      checked: (_foodSelectionsByDate[DateFormat("yyyy-MM-dd").format(_selectedDate)]?["Breakfast"] ?? false)
-          && (dayMenu["breakfast"]?["items"]?.isNotEmpty ?? false),
-      onChanged: (v) {
-        if (dayMenu["breakfast"]?["items"]?.isNotEmpty ?? false) {
-          _toggleFood("Breakfast", v);
-        }
-      },
-    ),
-    FoodTile(
-      keyName: "Lunch-$weekdayIndex",
-      title: dayMenu["lunch"] != null
-          ? "Lunch (${dayMenu["lunch"]["price"]}₹)"
-          : "Lunch",
-      time: "12 : 30 pm - 01 : 30 pm",
-      items: dayMenu["lunch"]?["items"] ?? [],
-      checked: (_foodSelectionsByDate[DateFormat("yyyy-MM-dd").format(_selectedDate)]?["Lunch"] ?? false)
-          && (dayMenu["lunch"]?["items"]?.isNotEmpty ?? false),
-      onChanged: (v) {
-        if (dayMenu["lunch"]?["items"]?.isNotEmpty ?? false) {
-          _toggleFood("Lunch", v);
-        }
-      },
-    ),
-    FoodTile(
-      keyName: "Snacks-$weekdayIndex",
-      title: dayMenu["snacks"] != null
-          ? "Snacks (${dayMenu["snacks"]["price"]}₹)"
-          : "Snacks",
-      time: "3 : 30 pm - 4 : 00 pm",
-      items: dayMenu["snacks"]?["items"] ?? [],
-      checked: (_foodSelectionsByDate[DateFormat("yyyy-MM-dd").format(_selectedDate)]?["Snacks"] ?? false)
-          && (dayMenu["snacks"]?["items"]?.isNotEmpty ?? false),
-      onChanged: (v) {
-        if (dayMenu["snacks"]?["items"]?.isNotEmpty ?? false) {
-          _toggleFood("Snacks", v);
-        }
-      },
-    ),
-  ],
-);
-   },
-                    ),
+                    final breakfastItems = dayMenu["breakfast"]?["items"] ?? [];
+                    final lunchItems = dayMenu["lunch"]?["items"] ?? [];
+                    final snacksItems = dayMenu["snacks"]?["items"] ?? [];
+
+                    final breakfastAvailable = breakfastItems.isNotEmpty;
+                    final lunchAvailable = lunchItems.isNotEmpty;
+                    final snacksAvailable = snacksItems.isNotEmpty;
+
+                    return ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        FoodTile(
+                          keyName: "Breakfast-$weekdayIndex",
+                          title: dayMenu["breakfast"] != null
+                              ? "Breakfast (${dayMenu["breakfast"]["price"]}₹)"
+                              : "Breakfast",
+                          time: "8 : 30 am - 09 : 30 am",
+                          items: breakfastItems,
+                          checked:
+                              (_foodSelectionsByDate[dateKey]?["Breakfast"] ??
+                                  false) &&
+                              breakfastAvailable,
+                          enabled: breakfastAvailable,
+                          onChanged: (v) => _toggleFood("Breakfast", v),
+                        ),
+                        FoodTile(
+                          keyName: "Lunch-$weekdayIndex",
+                          title: dayMenu["lunch"] != null
+                              ? "Lunch (${dayMenu["lunch"]["price"]}₹)"
+                              : "Lunch",
+                          time: "12 : 30 pm - 01 : 30 pm",
+                          items: lunchItems,
+                          checked:
+                              (_foodSelectionsByDate[dateKey]?["Lunch"] ??
+                                  false) &&
+                              lunchAvailable,
+                          enabled: lunchAvailable,
+                          onChanged: (v) => _toggleFood("Lunch", v),
+                        ),
+                        FoodTile(
+                          keyName: "Snacks-$weekdayIndex",
+                          title: dayMenu["snacks"] != null
+                              ? "Snacks (${dayMenu["snacks"]["price"]}₹)"
+                              : "Snacks",
+                          time: "3 : 30 pm - 4 : 00 pm",
+                          items: snacksItems,
+                          checked:
+                              (_foodSelectionsByDate[dateKey]?["Snacks"] ??
+                                  false) &&
+                              snacksAvailable,
+                          enabled: snacksAvailable,
+                          onChanged: (v) => _toggleFood("Snacks", v),
+                        ),
+                      ],
+                    );
+                  },
+                ),
         ),
         // Book Button
         Container(
@@ -417,7 +420,9 @@ class _DayFoodTabState extends State<DayFoodTab> {
           child: ElevatedButton(
             onPressed: _isAnySelected ? _submitFoodForSelectedDate : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: _isAnySelected ? Colors.blue : const Color(0xFFCCCCCC),
+              backgroundColor: _isAnySelected
+                  ? Colors.blue
+                  : const Color(0xFFCCCCCC),
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
@@ -455,7 +460,9 @@ class _DayFoodTabState extends State<DayFoodTab> {
       padding: const EdgeInsets.all(16),
       children: [
         Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -478,8 +485,6 @@ class _DayFoodTabState extends State<DayFoodTab> {
       ],
     );
   }
-
-
 
   Widget _dateScroller() {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -705,8 +710,7 @@ class _DayFoodTabState extends State<DayFoodTab> {
     );
   }
 
-
-    Widget _buildWeekdaysSection() {
+  Widget _buildWeekdaysSection() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -768,9 +772,4 @@ class _DayFoodTabState extends State<DayFoodTab> {
       ),
     );
   }
-
-
 }
-
-
-

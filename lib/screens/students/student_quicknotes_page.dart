@@ -65,7 +65,9 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
       default:
         try {
           if (colorName.startsWith('#')) {
-            return Color(int.parse(colorName.substring(1, 7), radix: 16) + 0xFF000000);
+            return Color(
+              int.parse(colorName.substring(1, 7), radix: 16) + 0xFF000000,
+            );
           }
         } catch (_) {}
         return Colors.yellow.shade100;
@@ -83,120 +85,146 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFE6E6E6),
-      drawer: const StudentMenuDrawer(),
-      appBar:  StudentAppBar(),
-      body: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        '< Back',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: _navigateToAddNote,
-                      icon: const Icon(Icons.add, color: Colors.white, size: 20),
-                      label: const Text(
-                        'Add',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                      style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFF29ABE2),
-                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+    return WillPopScope(
+      onWillPop: () async {
+        if (expandedIndex != null) {
+          setState(() {
+            expandedIndex = null; // 👈 go back to list
+          });
+          return false; // ❌ stop page pop
+        }
+        return true; // ✅ allow normal back
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFE6E6E6),
+        drawer: const StudentMenuDrawer(),
+        appBar: StudentAppBar(),
+        body: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Text(
+                          '< Back',
+                          style: TextStyle(fontSize: 16, color: Colors.black),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: const BoxDecoration(color: Color(0xFF2E3192)),
-                      child: SvgPicture.asset(
-                        'assets/icons/quick_notes.svg',
-                        height: 24,
-                        color: Colors.white,
+                      TextButton.icon(
+                        onPressed: _navigateToAddNote,
+                        icon: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        label: const Text(
+                          'Add',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFF29ABE2),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Sticky Notes',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF2E3192),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2E3192),
+                        ),
+                        child: SvgPicture.asset(
+                          'assets/icons/quick_notes.svg',
+                          height: 24,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // Notes List
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Sticky Notes',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2E3192),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              child: FutureBuilder<List<StudentStickyNote>>(
-                future: _notesFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No Quick Notes available',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    );
-                  } else {
-                    final notes = snapshot.data!;
-                    if (expandedIndex != null) {
-                      final note = notes[expandedIndex!];
-                      return ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        children: [_expandedNoteView(note)],
+            ),
+            const SizedBox(height: 10),
+
+            // Notes List
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: FutureBuilder<List<StudentStickyNote>>(
+                  future: _notesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No Quick Notes available',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
                       );
                     } else {
-                      return ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        itemCount: notes.length,
-                        itemBuilder: (context, index) {
-                          final note = notes[index];
-                          return _noteItem(note, index);
-                        },
-                      );
+                      final notes = snapshot.data!;
+                      if (expandedIndex != null) {
+                        final note = notes[expandedIndex!];
+                        return ListView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          children: [_expandedNoteView(note)],
+                        );
+                      } else {
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          itemCount: notes.length,
+                          itemBuilder: (context, index) {
+                            final note = notes[index];
+                            return _noteItem(note, index);
+                          },
+                        );
+                      }
                     }
-                  }
-                },
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -239,7 +267,10 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: _getColorFromString(note.color).withOpacity(0.7),
                     borderRadius: BorderRadius.circular(12),
@@ -268,7 +299,11 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
                 child: SingleChildScrollView(
                   child: Text(
                     note.notes,
-                    style: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.4),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ),
@@ -285,24 +320,46 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 16, color: Colors.black54),
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: Colors.black54,
+                      ),
                       const SizedBox(width: 8),
-                      const Text("Created: ",
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                      Text(_formatDate(note.createdDate),
-                          style: const TextStyle(fontSize: 14)),
+                      const Text(
+                        "Created: ",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _formatDate(note.createdDate),
+                        style: const TextStyle(fontSize: 14),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   if (note.updateDate != note.createdDate)
                     Row(
                       children: [
-                        const Icon(Icons.update, size: 16, color: Colors.black54),
+                        const Icon(
+                          Icons.update,
+                          size: 16,
+                          color: Colors.black54,
+                        ),
                         const SizedBox(width: 8),
-                        const Text("Updated: ",
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                        Text(_formatDate(note.updateDate),
-                            style: const TextStyle(fontSize: 14)),
+                        const Text(
+                          "Updated: ",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _formatDate(note.updateDate),
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ],
                     ),
                   const SizedBox(height: 8),
@@ -310,10 +367,17 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
                     children: [
                       const Icon(Icons.person, size: 16, color: Colors.black54),
                       const SizedBox(width: 8),
-                      const Text("By: ",
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                      Text(note.userName.isNotEmpty ? note.userName : 'You',
-                          style: const TextStyle(fontSize: 14)),
+                      const Text(
+                        "By: ",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        note.userName.isNotEmpty ? note.userName : 'You',
+                        style: const TextStyle(fontSize: 14),
+                      ),
                     ],
                   ),
                 ],
@@ -334,9 +398,10 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              blurRadius: 4,
-              offset: const Offset(0, 2)),
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -373,8 +438,10 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
               ),
             ),
             trailing: IconButton(
-              icon: Icon(isExpanded ? Icons.expand_less : Icons.chevron_right,
-                  color: Colors.black54),
+              icon: Icon(
+                isExpanded ? Icons.expand_less : Icons.chevron_right,
+                color: Colors.black54,
+              ),
               onPressed: () {
                 setState(() {
                   expandedIndex = isExpanded ? null : index;
@@ -397,8 +464,10 @@ class _StudentQuickNotesPageState extends State<StudentQuickNotesPage> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(note.notes,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                child: Text(
+                  note.notes,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                ),
               ),
             ),
         ],
@@ -461,8 +530,7 @@ class StudentQuickNoteService {
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token') ??
-        prefs.getString('access_token');
+    return prefs.getString('auth_token') ?? prefs.getString('access_token');
   }
 
   Future<int?> _getStudentId() async {
@@ -499,14 +567,19 @@ class StudentQuickNoteService {
 
       final response = await http.get(
         Uri.parse('$baseUrl/api/stickynotes/$studentId?user_type=Student'),
-        headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.map((json) => StudentStickyNote.fromJson(json)).toList();
       } else {
-        throw Exception('Failed to load student sticky notes: ${response.statusCode}');
+        throw Exception(
+          'Failed to load student sticky notes: ${response.statusCode}',
+        );
       }
     } catch (e) {
       debugPrint('Error fetching student notes: $e');

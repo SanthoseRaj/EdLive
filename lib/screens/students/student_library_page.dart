@@ -20,7 +20,8 @@ class StudentLibraryPage extends StatefulWidget {
 
 class _StudentLibraryPageState extends State<StudentLibraryPage>
     with SingleTickerProviderStateMixin {
-  final StudentLibraryCheckoutService _service = StudentLibraryCheckoutService();
+  final StudentLibraryCheckoutService _service =
+      StudentLibraryCheckoutService();
 
   late Future<List<StudentLibraryBook>> _allBooks;
   List<StudentLibraryBook>? _searchResults;
@@ -38,6 +39,12 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
   Future<List<StudentLibraryBook>> _fetchAndMarkBooks() async {
     final books = await _service.fetchAllBooks();
 
+    _markBooksAsViewedInBackground(books); // 🔥 don't await
+
+    return books;
+  }
+
+  void _markBooksAsViewedInBackground(List<StudentLibraryBook> books) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
     final studentId = prefs.getInt('student_id');
@@ -45,28 +52,28 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
     if (studentId != null) {
       for (var book in books) {
         if (book.id != null) {
-          await _markLibraryAsViewed(studentId, book.id!, token);
+          _markLibraryAsViewed(studentId, book.id!, token); // ❌ no await
         }
       }
     }
-    return books;
   }
 
   Future<void> _markLibraryAsViewed(
-      int studentId, int bookId, String token) async {
+    int studentId,
+    int bookId,
+    String token,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId"),
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/dashboard/viewed?studentId=$studentId",
+        ),
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          "item_type": "library",
-          "item_id": bookId,
-        }),
+        body: jsonEncode({"item_type": "library", "item_id": bookId}),
       );
 
       if (response.statusCode == 200) {
@@ -168,8 +175,9 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
                     _tabController.animateTo(0);
                   });
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Error: $e")));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Error: $e")));
                 } finally {
                   setState(() => _isSearching = false);
                 }
@@ -207,8 +215,10 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
               left: 20,
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: const Text("< Back",
-                    style: TextStyle(fontSize: 16, color: Colors.black)),
+                child: const Text(
+                  "< Back",
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
               ),
             ),
 
@@ -220,14 +230,20 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.search,
-                        color: Color(0xFF2E3192), size: 40),
+                    icon: const Icon(
+                      Icons.search,
+                      color: Color(0xFF2E3192),
+                      size: 40,
+                    ),
                     onPressed: _openSearchDialog,
                   ),
                   if (_searchResults != null)
                     IconButton(
-                      icon: const Icon(Icons.clear,
-                          color: Colors.black, size: 22),
+                      icon: const Icon(
+                        Icons.clear,
+                        color: Colors.black,
+                        size: 22,
+                      ),
                       tooltip: 'Clear search',
                       onPressed: _clearSearch,
                     ),
@@ -254,9 +270,10 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
                   const Text(
                     "Library",
                     style: TextStyle(
-                        fontSize: 29,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E3192)),
+                      fontSize: 29,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E3192),
+                    ),
                   ),
                 ],
               ),
@@ -293,29 +310,30 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
                           _isSearching
                               ? const Center(child: CircularProgressIndicator())
                               : _searchResults != null
-                                  ? _buildBookList(_searchResults!)
-                                  : FutureBuilder<List<StudentLibraryBook>>(
-                                      future: _allBooks,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                            ConnectionState.waiting) {
-                                          return const Center(
-                                            child: CircularProgressIndicator(),
-                                          );
-                                        }
-                                        if (snapshot.hasError) {
-                                          return Center(
-                                              child: Text(
-                                                  "Error: ${snapshot.error}"));
-                                        }
-                                        final books = snapshot.data ?? [];
-                                        if (books.isEmpty) {
-                                          return const Center(
-                                              child: Text("No books found."));
-                                        }
-                                        return _buildBookList(books);
-                                      },
-                                    ),
+                              ? _buildBookList(_searchResults!)
+                              : FutureBuilder<List<StudentLibraryBook>>(
+                                  future: _allBooks,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+                                    if (snapshot.hasError) {
+                                      return Center(
+                                        child: Text("Error: ${snapshot.error}"),
+                                      );
+                                    }
+                                    final books = snapshot.data ?? [];
+                                    if (books.isEmpty) {
+                                      return const Center(
+                                        child: Text("No books found."),
+                                      );
+                                    }
+                                    return _buildBookList(books);
+                                  },
+                                ),
 
                           // My Books (placeholder)
                           const Center(child: Text("My Books list here")),
@@ -343,27 +361,33 @@ class _StudentLibraryPageState extends State<StudentLibraryPage>
         final book = books[index];
         return Card(
           elevation: 3,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           margin: const EdgeInsets.only(bottom: 16),
           child: ListTile(
             leading: const Icon(Icons.menu_book, color: Colors.green),
-            title: Text(book.title,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              book.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Text(
-                "Author: ${book.author}\nGenre: ${book.genre}\nLocation: ${book.location}"),
+              "Author: ${book.author}\nGenre: ${book.genre}\nLocation: ${book.location}",
+            ),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                    "Available: ${book.availableQuantity ?? 0}/${book.quantity ?? 0}"),
+                  "Available: ${book.availableQuantity ?? 0}/${book.quantity ?? 0}",
+                ),
               ],
             ),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => StudentBookDetailPage(bookId: book.id)),
+                  builder: (_) => StudentBookDetailPage(bookId: book.id),
+                ),
               );
             },
           ),

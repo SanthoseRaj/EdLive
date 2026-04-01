@@ -12,6 +12,7 @@ class MonthFoodTab extends StatefulWidget {
 }
 
 class _MonthFoodTabState extends State<MonthFoodTab> {
+  static const List<String> _mealTypes = ["Breakfast", "Lunch", "Snacks"];
   DateTime _selectedMonth = DateTime.now();
   DateTime _selectedDate = DateTime.now();
   Map<String, Map<String, bool>> _foodSelectionsByDate = {};
@@ -20,19 +21,18 @@ class _MonthFoodTabState extends State<MonthFoodTab> {
   bool _loading = false;
   double _totalAmount = 0.0;
 
- @override
-void initState() {
-  super.initState();
-  _loadInitialData();
-}
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
 
-Future<void> _loadInitialData() async {
-  setState(() => _loading = true);
-  await _fetchMenu(); // wait for menu
-  await _fetchMonthSchedule(); // then fetch confirmations
-  setState(() => _loading = false);
-}
-
+  Future<void> _loadInitialData() async {
+    setState(() => _loading = true);
+    await _fetchMenu(); // wait for menu
+    await _fetchMonthSchedule(); // then fetch confirmations
+    setState(() => _loading = false);
+  }
 
   Future<void> _fetchMenu() async {
     setState(() => _loading = true);
@@ -68,85 +68,95 @@ Future<void> _loadInitialData() async {
   }
 
   Future<void> _fetchMonthSchedule() async {
-  setState(() => _loading = true);
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("auth_token") ?? "";
-    final studentId = prefs.getInt("student_id") ?? 0;
+    setState(() => _loading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("auth_token") ?? "";
+      final studentId = prefs.getInt("student_id") ?? 0;
 
-    final firstDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-    final lastDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
-    final totalDays = lastDayOfMonth.day;
+      final firstDayOfMonth = DateTime(
+        _selectedMonth.year,
+        _selectedMonth.month,
+        1,
+      );
+      final lastDayOfMonth = DateTime(
+        _selectedMonth.year,
+        _selectedMonth.month + 1,
+        0,
+      );
+      final totalDays = lastDayOfMonth.day;
 
-    Map<String, Map<String, bool>> confirmedMeals = {};
-    Map<String, Map<String, bool>> selections = {};
+      Map<String, Map<String, bool>> confirmedMeals = {};
+      Map<String, Map<String, bool>> selections = {};
 
-    // 🌀 Run all API calls in parallel to avoid missing dates
-    await Future.wait(List.generate(totalDays, (i) async {
-      final date = firstDayOfMonth.add(Duration(days: i));
-      final dateKey = DateFormat("yyyy-MM-dd").format(date);
+      // 🌀 Run all API calls in parallel to avoid missing dates
+      await Future.wait(
+        List.generate(totalDays, (i) async {
+          final date = firstDayOfMonth.add(Duration(days: i));
+          final dateKey = DateFormat("yyyy-MM-dd").format(date);
 
-      final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$dateKey";
+          final url =
+              "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/food/schedule/$studentId/$dateKey";
 
-      try {
-        final response = await http.get(
-          Uri.parse(url),
-          headers: {
-            "accept": "application/json",
-            "Authorization": "Bearer $token",
-          },
-        );
+          try {
+            final response = await http.get(
+              Uri.parse(url),
+              headers: {
+                "accept": "application/json",
+                "Authorization": "Bearer $token",
+              },
+            );
 
-        if (response.statusCode == 200 && response.body.isNotEmpty) {
-          final data = json.decode(response.body);
+            if (response.statusCode == 200 && response.body.isNotEmpty) {
+              final data = json.decode(response.body);
 
-          // ✅ Confirm booked meals (from backend)
-          final breakfastConfirmed = (data["breakfast_menu_id"] ?? 0) != 0;
-          final lunchConfirmed = (data["lunch_menu_id"] ?? 0) != 0;
-          final snacksConfirmed = (data["snacks_menu_id"] ?? 0) != 0;
+              // ✅ Confirm booked meals (from backend)
+              final breakfastConfirmed = (data["breakfast_menu_id"] ?? 0) != 0;
+              final lunchConfirmed = (data["lunch_menu_id"] ?? 0) != 0;
+              final snacksConfirmed = (data["snacks_menu_id"] ?? 0) != 0;
 
-          confirmedMeals[dateKey] = {
-            "Breakfast": breakfastConfirmed,
-            "Lunch": lunchConfirmed,
-            "Snacks": snacksConfirmed,
-          };
-        } else {
-          confirmedMeals[dateKey] = {
+              confirmedMeals[dateKey] = {
+                "Breakfast": breakfastConfirmed,
+                "Lunch": lunchConfirmed,
+                "Snacks": snacksConfirmed,
+              };
+            } else {
+              confirmedMeals[dateKey] = {
+                "Breakfast": false,
+                "Lunch": false,
+                "Snacks": false,
+              };
+            }
+          } catch (e) {
+            confirmedMeals[dateKey] = {
+              "Breakfast": false,
+              "Lunch": false,
+              "Snacks": false,
+            };
+          }
+
+          // Default: user selection reset
+          selections[dateKey] = {
             "Breakfast": false,
             "Lunch": false,
             "Snacks": false,
           };
-        }
-      } catch (e) {
-        confirmedMeals[dateKey] = {
-          "Breakfast": false,
-          "Lunch": false,
-          "Snacks": false,
-        };
-      }
+        }),
+      );
 
-      // Default: user selection reset
-      selections[dateKey] = {
-        "Breakfast": false,
-        "Lunch": false,
-        "Snacks": false,
-      };
-    }));
+      // ✅ After all API calls complete, update UI once
+      setState(() {
+        _confirmedMealsByDate = confirmedMeals;
+        _foodSelectionsByDate = selections;
+        _loading = false;
+      });
 
-    // ✅ After all API calls complete, update UI once
-    setState(() {
-      _confirmedMealsByDate = confirmedMeals;
-      _foodSelectionsByDate = selections;
-      _loading = false;
-    });
-
-    _calculateTotal();
-  } catch (e) {
-    print("Fetch month schedule error: $e");
-    setState(() => _loading = false);
+      _calculateTotal();
+    } catch (e) {
+      print("Fetch month schedule error: $e");
+      setState(() => _loading = false);
+    }
   }
-}
 
   void _calculateTotal() {
     double total = 0.0;
@@ -158,7 +168,9 @@ Future<void> _loadInitialData() async {
       meals.forEach((meal, selected) {
         if (!selected) return;
         final mealData = dayMenu?[meal.toLowerCase()];
-        if (mealData == null || !(mealData["items"]?.isNotEmpty ?? false)) return;
+        if (mealData == null || !(mealData["items"]?.isNotEmpty ?? false)) {
+          return;
+        }
         total += (mealData["price"] ?? 0).toDouble();
       });
     });
@@ -178,44 +190,210 @@ Future<void> _loadInitialData() async {
     _calculateTotal();
   }
 
-void _selectAllWeek() {
-  setState(() {
-    // Check if at least one meal is selected anywhere
-    bool anySelected = _foodSelectionsByDate.values
-        .any((meals) => meals.values.any((selected) => selected));
+  List<String> _getSelectableMeals(
+    String dateKey,
+    Map<String, dynamic>? dayMenu,
+  ) {
+    return _mealTypes.where((meal) {
+      final hasItems =
+          dayMenu?[meal.toLowerCase()]?["items"]?.isNotEmpty ?? false;
+      final isAlreadyBooked = _confirmedMealsByDate[dateKey]?[meal] ?? false;
+      return hasItems && !isAlreadyBooked;
+    }).toList();
+  }
 
-    // If any selected -> unselect all; else -> select all
-    bool shouldSelectAll = !anySelected;
+  List<String> _getAvailableMeals(Map<String, dynamic>? dayMenu) {
+    return _mealTypes.where((meal) {
+      return dayMenu?[meal.toLowerCase()]?["items"]?.isNotEmpty ?? false;
+    }).toList();
+  }
 
-    final firstDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-    final lastDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
-    final totalDays = lastDayOfMonth.day;
+  bool _hasAnyMenuItems(Map<String, dynamic>? dayMenu) {
+    return _getAvailableMeals(dayMenu).isNotEmpty;
+  }
 
-    for (int i = 0; i < totalDays; i++) {
-      final date = firstDayOfMonth.add(Duration(days: i));
+  bool _isMealMarked(String dateKey, String meal) {
+    final isSelected = _foodSelectionsByDate[dateKey]?[meal] ?? false;
+    final isAlreadyBooked = _confirmedMealsByDate[dateKey]?[meal] ?? false;
+    return isSelected || isAlreadyBooked;
+  }
+
+  bool _isAnyAvailableMealMarked(
+    String dateKey,
+    Map<String, dynamic>? dayMenu,
+  ) {
+    final availableMeals = _getAvailableMeals(dayMenu);
+    return availableMeals.any((meal) => _isMealMarked(dateKey, meal));
+  }
+
+  bool _areAllAvailableMealsMarked(
+    String dateKey,
+    Map<String, dynamic>? dayMenu,
+  ) {
+    final availableMeals = _getAvailableMeals(dayMenu);
+    if (availableMeals.isEmpty) {
+      return false;
+    }
+    return availableMeals.every((meal) => _isMealMarked(dateKey, meal));
+  }
+
+  bool _areAllSelectableMealsSelected(
+    String dateKey,
+    Map<String, dynamic>? dayMenu,
+  ) {
+    final selections = _foodSelectionsByDate[dateKey] ?? {};
+    final selectableMeals = _getSelectableMeals(dateKey, dayMenu);
+    if (selectableMeals.isEmpty) return false;
+    return selectableMeals.every((meal) => selections[meal] ?? false);
+  }
+
+  bool _hasSelectableMealsForDates(Iterable<DateTime> dates) {
+    for (final date in dates) {
       final dateKey = DateFormat("yyyy-MM-dd").format(date);
       final weekdayIndex = date.weekday % 7;
       final dayMenu = _weeklyMenu?["$weekdayIndex"];
+      if (_getSelectableMeals(dateKey, dayMenu).isNotEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-      // Initialize if missing
+  bool _hasAnyMenuItemsForDates(Iterable<DateTime> dates) {
+    for (final date in dates) {
+      final weekdayIndex = date.weekday % 7;
+      final dayMenu = _weeklyMenu?["$weekdayIndex"];
+      if (_hasAnyMenuItems(dayMenu)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isAnyAvailableMealMarkedForDates(Iterable<DateTime> dates) {
+    for (final date in dates) {
+      final dateKey = DateFormat("yyyy-MM-dd").format(date);
+      final weekdayIndex = date.weekday % 7;
+      final dayMenu = _weeklyMenu?["$weekdayIndex"];
+      if (_isAnyAvailableMealMarked(dateKey, dayMenu)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _areAllSelectableMealsSelectedForDates(Iterable<DateTime> dates) {
+    bool hasSelectableMeals = false;
+
+    for (final date in dates) {
+      final dateKey = DateFormat("yyyy-MM-dd").format(date);
+      final weekdayIndex = date.weekday % 7;
+      final dayMenu = _weeklyMenu?["$weekdayIndex"];
+      final selectableMeals = _getSelectableMeals(dateKey, dayMenu);
+
+      if (selectableMeals.isEmpty) {
+        continue;
+      }
+
+      hasSelectableMeals = true;
+      final selections = _foodSelectionsByDate[dateKey] ?? {};
+      final allSelected = selectableMeals.every(
+        (meal) => selections[meal] ?? false,
+      );
+      if (!allSelected) {
+        return false;
+      }
+    }
+
+    return hasSelectableMeals;
+  }
+
+  bool _areAllAvailableMealsMarkedForDates(Iterable<DateTime> dates) {
+    bool hasAnyMenuItems = false;
+
+    for (final date in dates) {
+      final dateKey = DateFormat("yyyy-MM-dd").format(date);
+      final weekdayIndex = date.weekday % 7;
+      final dayMenu = _weeklyMenu?["$weekdayIndex"];
+      final availableMeals = _getAvailableMeals(dayMenu);
+
+      if (availableMeals.isEmpty) {
+        continue;
+      }
+
+      hasAnyMenuItems = true;
+      final allMarked = availableMeals.every(
+        (meal) => _isMealMarked(dateKey, meal),
+      );
+      if (!allMarked) {
+        return false;
+      }
+    }
+
+    return hasAnyMenuItems;
+  }
+
+  void _toggleDaySelection(String dateKey, Map<String, dynamic>? dayMenu) {
+    final selectableMeals = _getSelectableMeals(dateKey, dayMenu);
+    if (selectableMeals.isEmpty) return;
+
+    final shouldSelect = !_areAllSelectableMealsSelected(dateKey, dayMenu);
+
+    setState(() {
       _foodSelectionsByDate.putIfAbsent(
         dateKey,
         () => {"Breakfast": false, "Lunch": false, "Snacks": false},
       );
 
-      for (final meal in ["Breakfast", "Lunch", "Snacks"]) {
-        final hasItems = dayMenu?[meal.toLowerCase()]?["items"]?.isNotEmpty ?? false;
+      for (final meal in selectableMeals) {
+        _foodSelectionsByDate[dateKey]![meal] = shouldSelect;
+      }
+    });
 
-        // Only change meals that have items
-        if (hasItems) {
+    _calculateTotal();
+  }
+
+  void _selectAllWeek() {
+    final firstDayOfMonth = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month,
+      1,
+    );
+    final lastDayOfMonth = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month + 1,
+      0,
+    );
+    final totalDays = lastDayOfMonth.day;
+    final monthDates = List.generate(
+      totalDays,
+      (i) => firstDayOfMonth.add(Duration(days: i)),
+    );
+    if (!_hasSelectableMealsForDates(monthDates)) return;
+
+    setState(() {
+      final shouldSelectAll = !_areAllSelectableMealsSelectedForDates(
+        monthDates,
+      );
+
+      for (final date in monthDates) {
+        final dateKey = DateFormat("yyyy-MM-dd").format(date);
+        final weekdayIndex = date.weekday % 7;
+        final dayMenu = _weeklyMenu?["$weekdayIndex"];
+
+        _foodSelectionsByDate.putIfAbsent(
+          dateKey,
+          () => {"Breakfast": false, "Lunch": false, "Snacks": false},
+        );
+
+        for (final meal in _getSelectableMeals(dateKey, dayMenu)) {
           _foodSelectionsByDate[dateKey]![meal] = shouldSelectAll;
         }
       }
-    }
-  });
+    });
 
-  _calculateTotal();
-}
+    _calculateTotal();
+  }
 
   Future<void> _submitFoodForWeek() async {
     final selectedDays = _foodSelectionsByDate.entries
@@ -244,19 +422,19 @@ void _selectAllWeek() {
           "end_date": dateKey,
           "breakfast_menu_id":
               (selections["Breakfast"]! &&
-                      dayMenu?["breakfast"]?["items"]?.isNotEmpty == true)
-                  ? dayMenu!["breakfast"]["items"][0]["id"]
-                  : null,
+                  dayMenu?["breakfast"]?["items"]?.isNotEmpty == true)
+              ? dayMenu!["breakfast"]["items"][0]["id"]
+              : null,
           "lunch_menu_id":
               (selections["Lunch"]! &&
-                      dayMenu?["lunch"]?["items"]?.isNotEmpty == true)
-                  ? dayMenu!["lunch"]["items"][0]["id"]
-                  : null,
+                  dayMenu?["lunch"]?["items"]?.isNotEmpty == true)
+              ? dayMenu!["lunch"]["items"][0]["id"]
+              : null,
           "snacks_menu_id":
               (selections["Snacks"]! &&
-                      dayMenu?["snacks"]?["items"]?.isNotEmpty == true)
-                  ? dayMenu!["snacks"]["items"][0]["id"]
-                  : null,
+                  dayMenu?["snacks"]?["items"]?.isNotEmpty == true)
+              ? dayMenu!["snacks"]["items"][0]["id"]
+              : null,
         };
 
         final url =
@@ -298,125 +476,147 @@ void _selectAllWeek() {
 
   @override
   Widget build(BuildContext context) {
-    final firstDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-    final lastDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+    final firstDayOfMonth = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month,
+      1,
+    );
+    final lastDayOfMonth = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month + 1,
+      0,
+    );
     final totalDays = lastDayOfMonth.day;
-    final monthDates = List.generate(totalDays, (i) => firstDayOfMonth.add(Duration(days: i)));
+    final monthDates = List.generate(
+      totalDays,
+      (i) => firstDayOfMonth.add(Duration(days: i)),
+    );
 
     return Column(
       children: [
         // Month Header
-      Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      IconButton(
-        icon: const Icon(Icons.arrow_left, size: 38),
-        onPressed: () {
-          setState(() {
-            _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
-            _selectedDate = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-            _fetchMenu();
-            _fetchMonthSchedule();
-          });
-        },
-      ),
-      Expanded(
-        child: Center(
-          child: Text(
-            DateFormat('MMMM yyyy').format(_selectedMonth),
-            overflow: TextOverflow.ellipsis, // 👈 prevents overflow text
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2E3192),
-            ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left, size: 38),
+                onPressed: () {
+                  setState(() {
+                    _selectedMonth = DateTime(
+                      _selectedMonth.year,
+                      _selectedMonth.month - 1,
+                    );
+                    _selectedDate = DateTime(
+                      _selectedMonth.year,
+                      _selectedMonth.month,
+                      1,
+                    );
+                    _fetchMenu();
+                    _fetchMonthSchedule();
+                  });
+                },
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    DateFormat('MMMM yyyy').format(_selectedMonth),
+                    overflow:
+                        TextOverflow.ellipsis, // 👈 prevents overflow text
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E3192),
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_right, size: 38),
+                onPressed: () {
+                  setState(() {
+                    _selectedMonth = DateTime(
+                      _selectedMonth.year,
+                      _selectedMonth.month + 1,
+                    );
+                    _selectedDate = DateTime(
+                      _selectedMonth.year,
+                      _selectedMonth.month,
+                      1,
+                    );
+                    _fetchMenu();
+                    _fetchMonthSchedule();
+                  });
+                },
+              ),
+            ],
           ),
         ),
-      ),
-      IconButton(
-        icon: const Icon(Icons.arrow_right, size: 38),
-        onPressed: () {
-          setState(() {
-            _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
-            _selectedDate = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-            _fetchMenu();
-            _fetchMonthSchedule();
-          });
-        },
-      ),
-    ],
-  ),
-),
         // All Select
-     Container(
-  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-  color: Colors.white,
-  child: Row(
-    children: [
-      const SizedBox(width: 10),
-      GestureDetector(
-        onTap: _selectAllWeek,
-        child: Builder(
-          builder: (_) {
-            bool allSelected = true;
-            bool anySelected = false;
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          color: Colors.white,
+          child: Row(
+            children: [
+              const SizedBox(width: 10),
+              Builder(
+                builder: (_) {
+                  final hasAnyMenuItems = _hasAnyMenuItemsForDates(monthDates);
+                  final hasSelectableMeals = _hasSelectableMealsForDates(
+                    monthDates,
+                  );
+                  final allMarked = _areAllAvailableMealsMarkedForDates(
+                    monthDates,
+                  );
+                  final anyMarked = _isAnyAvailableMealMarkedForDates(
+                    monthDates,
+                  );
 
-            _foodSelectionsByDate.forEach((dateKey, dayMeals) {
-              final weekdayIndex = DateTime.parse(dateKey).weekday % 7;
-              final dayMenu = _weeklyMenu?["$weekdayIndex"];
+                  IconData icon;
+                  Color color;
 
-              ["Breakfast", "Lunch", "Snacks"].forEach((meal) {
-                final hasItems =
-                    dayMenu?[meal.toLowerCase()]?["items"]?.isNotEmpty ?? false;
-                final isSelected = dayMeals[meal] ?? false;
-                if (hasItems) {
-                  if (!isSelected) allSelected = false;
-                  if (isSelected) anySelected = true;
-                }
-              });
-            });
+                  if (!hasAnyMenuItems) {
+                    icon = Icons.check_box_rounded;
+                    color = Colors.grey.shade400;
+                  } else if (allMarked) {
+                    icon = Icons.check_box_rounded;
+                    color = Colors.blue;
+                  } else if (anyMarked) {
+                    icon = Icons.indeterminate_check_box_rounded;
+                    color = Colors.blue;
+                  } else {
+                    icon = Icons.check_box_outline_blank_rounded;
+                    color = Colors.grey;
+                  }
 
-            IconData icon;
-            Color color;
-
-            if (allSelected && anySelected) {
-              icon = Icons.check_box_rounded;
-              color =Colors.blue; // dark blue
-            } else if (anySelected) {
-              icon = Icons.indeterminate_check_box_rounded;
-              color =Colors.blue;
-            } else {
-              icon = Icons.check_box_outline_blank_rounded;
-              color = Colors.grey;
-            }
-
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                icon,
-                key: ValueKey(icon),
-                size: 26,
-                color: color,
+                  return GestureDetector(
+                    onTap: hasSelectableMeals ? _selectAllWeek : null,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        icon,
+                        key: ValueKey(icon),
+                        size: 26,
+                        color: color,
+                      ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
+              const SizedBox(width: 6),
+              const Text(
+                "All",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
         ),
-      ),
-      const SizedBox(width: 6),
-      const Text(
-        "All",
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-      ),
-      const Spacer(),
-    ],
-  ),
-),
 
         const SizedBox(height: 12),
 
@@ -425,7 +625,10 @@ void _selectAllWeek() {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   children: monthDates.map((date) {
                     final dateKey = DateFormat("yyyy-MM-dd").format(date);
                     final dayAbbrev = DateFormat('E').format(date);
@@ -433,11 +636,27 @@ void _selectAllWeek() {
                     final weekdayIndex = date.weekday % 7;
                     final dayMenu = _weeklyMenu?["$weekdayIndex"];
                     final selections =
-                        _foodSelectionsByDate[dateKey] ?? {"Breakfast": false, "Lunch": false, "Snacks": false};
+                        _foodSelectionsByDate[dateKey] ??
+                        {"Breakfast": false, "Lunch": false, "Snacks": false};
+                    final hasAnyMenuItems = _hasAnyMenuItems(dayMenu);
+                    final hasSelectableMeals = _getSelectableMeals(
+                      dateKey,
+                      dayMenu,
+                    ).isNotEmpty;
+                    final isDayFullyMarked = _areAllAvailableMealsMarked(
+                      dateKey,
+                      dayMenu,
+                    );
+                    final isDayPartiallyMarked =
+                        _isAnyAvailableMealMarked(dateKey, dayMenu) &&
+                        !isDayFullyMarked;
 
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
@@ -453,17 +672,9 @@ void _selectAllWeek() {
                         children: [
                           // Day label + select all
                           GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                final allSelected = selections.values.every((v) => v);
-                                selections.forEach((key, value) {
-                                  final hasItems = dayMenu?[key.toLowerCase()]?["items"]?.isNotEmpty ?? false;
-                                  if (hasItems) selections[key] = !allSelected;
-                                });
-                                _foodSelectionsByDate[dateKey] = selections;
-                              });
-                              _calculateTotal();
-                            },
+                            onTap: hasSelectableMeals
+                                ? () => _toggleDaySelection(dateKey, dayMenu)
+                                : null,
                             child: Container(
                               width: 40,
                               alignment: Alignment.center,
@@ -482,13 +693,20 @@ void _selectAllWeek() {
                                   ),
                                   const SizedBox(height: 4),
                                   Icon(
-                                    selections.values.every((v) => v)
+                                    !hasAnyMenuItems
+                                        ? Icons.check_box_rounded
+                                        : isDayFullyMarked
                                         ? Icons.check_box
-                                        : selections.values.any((v) => v)
-                                            ? Icons.indeterminate_check_box
-                                            : Icons.check_box_outline_blank,
+                                        : isDayPartiallyMarked
+                                        ? Icons.indeterminate_check_box
+                                        : Icons.check_box_outline_blank,
                                     size: 20,
-                                    color: selections.values.any((v) => v) ? Colors.blue : Colors.grey,
+                                    color: !hasAnyMenuItems
+                                        ? Colors.grey.shade400
+                                        : (isDayFullyMarked ||
+                                              isDayPartiallyMarked)
+                                        ? Colors.blue
+                                        : Colors.grey,
                                   ),
                                 ],
                               ),
@@ -500,19 +718,31 @@ void _selectAllWeek() {
                           Expanded(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: ["Breakfast", "Lunch", "Snacks"].map((meal) {
+                              children: ["Breakfast", "Lunch", "Snacks"].map((
+                                meal,
+                              ) {
                                 final mealData = dayMenu?[meal.toLowerCase()];
-                                final hasItems = mealData?["items"]?.isNotEmpty ?? false;
-                                final isAlreadyBooked = _confirmedMealsByDate[dateKey]?[meal] ?? false;
+                                final hasItems =
+                                    mealData?["items"]?.isNotEmpty ?? false;
+                                final isAlreadyBooked =
+                                    _confirmedMealsByDate[dateKey]?[meal] ??
+                                    false;
                                 final checked = selections[meal] ?? false;
                                 final mealPrice = mealData?["price"] ?? 0;
-                                final firstItemName = hasItems ? mealData["items"][0]["name"] : "";
+                                final firstItemName = hasItems
+                                    ? mealData["items"][0]["name"]
+                                    : "";
 
-                                final screenWidth = MediaQuery.of(context).size.width;
+                                final screenWidth = MediaQuery.of(
+                                  context,
+                                ).size.width;
                                 final containerWidth = (screenWidth - 100) / 4;
                                 final textScale = screenWidth / 400;
 
-                                Color bgColor, borderColor, textColor, priceColor;
+                                Color bgColor,
+                                    borderColor,
+                                    textColor,
+                                    priceColor;
 
                                 if (!hasItems) {
                                   // No menu
@@ -541,11 +771,18 @@ void _selectAllWeek() {
                                 }
 
                                 return GestureDetector(
-                                  onTap: (!hasItems || isAlreadyBooked) ? null : () => _toggleFood(dateKey, meal),
+                                  onTap: (!hasItems || isAlreadyBooked)
+                                      ? null
+                                      : () => _toggleFood(dateKey, meal),
                                   child: Container(
                                     width: containerWidth,
-                                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: 6,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: bgColor,
                                       border: Border.all(color: borderColor),
@@ -559,7 +796,8 @@ void _selectAllWeek() {
                                           style: TextStyle(
                                             color: textColor,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 12 * textScale.clamp(0.9, 1.1),
+                                            fontSize:
+                                                12 * textScale.clamp(0.9, 1.1),
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -569,7 +807,8 @@ void _selectAllWeek() {
                                           firstItemName,
                                           style: TextStyle(
                                             color: textColor,
-                                            fontSize: 10 * textScale.clamp(0.9, 1.1),
+                                            fontSize:
+                                                10 * textScale.clamp(0.9, 1.1),
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -579,7 +818,8 @@ void _selectAllWeek() {
                                         Text(
                                           "₹$mealPrice",
                                           style: TextStyle(
-                                            fontSize: 12 * textScale.clamp(0.9, 1.1),
+                                            fontSize:
+                                                12 * textScale.clamp(0.9, 1.1),
                                             color: priceColor,
                                           ),
                                           maxLines: 1,
@@ -613,11 +853,17 @@ void _selectAllWeek() {
           width: double.infinity,
           margin: const EdgeInsets.all(16),
           child: ElevatedButton(
-            onPressed: _foodSelectionsByDate.values.any((day) => day.containsValue(true))
+            onPressed:
+                _foodSelectionsByDate.values.any(
+                  (day) => day.containsValue(true),
+                )
                 ? _submitFoodForWeek
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: _foodSelectionsByDate.values.any((day) => day.containsValue(true))
+              backgroundColor:
+                  _foodSelectionsByDate.values.any(
+                    (day) => day.containsValue(true),
+                  )
                   ? Colors.blue
                   : const Color(0xFFCCCCCC),
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),

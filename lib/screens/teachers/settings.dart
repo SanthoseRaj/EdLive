@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:school_app/providers/teacher_settings_provider.dart';
-import 'teacher_menu_drawer.dart';
+
 import 'package:school_app/widgets/teacher_app_bar.dart';
+
+import 'teacher_menu_drawer.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,21 +18,20 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   int _selectedTab = 0;
 
-  final List<String> settingsKeys = [
-    'Achievements',
-    'My to-do list',
-    'PTA',
-    'Library',
-    'Syllabus',
-    'Special care',
-    'Co curricular activities',
-    'Quick notes',
-    'Resources'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      context.read<SettingsProvider>().loadSettings(forceRefresh: true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<SettingsProvider>(context);
+    final settings = context.watch<SettingsProvider>();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -46,88 +47,15 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         child: Scaffold(
           backgroundColor: Colors.white,
-          drawer: const MenuDrawer(), // ✅ Using your new custom drawer
+          drawer: const MenuDrawer(),
           body: Column(
             children: [
-               const TeacherAppBar(),
+              const TeacherAppBar(),
               _buildHeader(),
               _buildTabBar(),
               Expanded(
                 child: _selectedTab == 0
-                    ? ListView.builder(
-                        itemCount: settingsKeys.length,
-                        itemBuilder: (context, index) {
-                          final key = settingsKeys[index];
-                          bool value;
-                          switch (key) {
-                            case 'Achievements':
-                              value = settings.showAchievements;
-                              break;
-                            case 'My to-do list':
-                              value = settings.showTodo;
-                              break;
-                            case 'PTA':
-                              value = settings.showPTA;
-                              break;
-                            case 'Library':
-                              value = settings.showLibrary;
-                              break;
-                            case 'Syllabus':
-                              value = settings.showSyllabus;
-                              break;
-                            case 'Special care':
-                              value = settings.showSpecialCare;
-                              break;
-                            case 'Co curricular activities':
-                              value = settings.showCoCurricular;
-                              break;
-                            case 'Quick notes':
-                              value = settings.showQuickNotes;
-                              break;
-                            case 'Resources':
-                              value = settings.showResources;
-                              break;
-                            default:
-                              value = false;
-                          }
-
-                return Column(
-  children: [
-    Theme(
-      data: Theme.of(context).copyWith(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        splashFactory: NoSplash.splashFactory,
-        switchTheme: SwitchThemeData(
-          thumbColor: MaterialStateProperty.resolveWith<Color>(
-            (states) => states.contains(MaterialState.selected)
-                ? Colors.white // white thumb when ON
-                : Colors.grey.shade400, // default thumb
-          ),
-          trackColor: MaterialStateProperty.resolveWith<Color>(
-            (states) => states.contains(MaterialState.selected)
-                ? const Color(0xFF77FF00) // green track when ON
-                : Colors.grey.shade300, // default track
-          ),
-        ),
-      ),
-      child: SwitchListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        title: Text(key),
-        value: value,
-        tileColor: Colors.transparent,
-        onChanged: (bool newValue) {
-          settings.updateVisibility(key, newValue);
-        },
-      ),
-    ),
-    if (index < settingsKeys.length - 1)
-      const Divider(height: 0, indent: 16),
-  ],
-);
-       },
-                      )
+                    ? _buildDashboardSettings(settings)
                     : ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
@@ -141,7 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             child: const Center(
                               child: Text(
-                                "Reset password",
+                                'Reset password',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -160,6 +88,71 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildDashboardSettings(SettingsProvider settings) {
+    if (settings.isLoading && !settings.hasLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ListView.builder(
+      itemCount: settings.options.length,
+      itemBuilder: (context, index) {
+        final option = settings.options[index];
+        final value = settings.isVisible(option.key);
+        final messenger = ScaffoldMessenger.of(context);
+
+        return Column(
+          children: [
+            Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+                switchTheme: SwitchThemeData(
+                  thumbColor: WidgetStateProperty.resolveWith<Color>(
+                    (states) => states.contains(WidgetState.selected)
+                        ? Colors.white
+                        : Colors.grey.shade400,
+                  ),
+                  trackColor: WidgetStateProperty.resolveWith<Color>(
+                    (states) => states.contains(WidgetState.selected)
+                        ? const Color(0xFF77FF00)
+                        : Colors.grey.shade300,
+                  ),
+                ),
+              ),
+              child: SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                title: Text(option.title),
+                value: value,
+                tileColor: Colors.transparent,
+                onChanged: (newValue) async {
+                  try {
+                    await settings.updateVisibility(option.key, newValue);
+                  } catch (error) {
+                    if (!mounted) {
+                      return;
+                    }
+
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          error.toString().replaceFirst('Exception: ', ''),
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+            if (index < settings.options.length - 1)
+              const Divider(height: 0, indent: 16),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _noSplashButton({
     required VoidCallback onPressed,
     required Widget child,
@@ -171,68 +164,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // Widget _buildAppBar() {
-  //   return PreferredSize(
-  //     preferredSize: const Size.fromHeight(70),
-  //     child: Container(
-  //       decoration: const BoxDecoration(
-  //         color: Colors.white,
-  //         border: Border(bottom: BorderSide(color: Colors.black, width: 2.0)),
-  //       ),
-  //       child: AppBar(
-  //         backgroundColor: Colors.transparent,
-  //         elevation: 0,
-  //         toolbarHeight: 70,
-  //         automaticallyImplyLeading: false,
-  //         leading: Builder(
-  //           builder: (context) => _noSplashButton(
-  //             onPressed: () => Scaffold.of(context).openDrawer(),
-  //             child: const Icon(Icons.menu, color: Colors.black),
-  //           ),
-  //         ),
-  //         title: Row(
-  //           children: [
-  //             const Text(
-  //               'Ed',
-  //               style: TextStyle(
-  //                 color: Colors.indigo,
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 24,
-  //               ),
-  //             ),
-  //             const Text(
-  //               'Live',
-  //               style: TextStyle(
-  //                 color: Colors.lightBlue,
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 24,
-  //               ),
-  //             ),
-  //             const Spacer(),
-  //             _noSplashButton(
-  //               onPressed: () {},
-  //               child: SvgPicture.asset(
-  //                 'assets/icons/notification.svg',
-  //                 height: 24,
-  //                 width: 24,
-  //                 color: Colors.black,
-  //               ),
-  //             ),
-  //             const SizedBox(width: 16),
-  //             _noSplashButton(
-  //               onPressed: () => Navigator.pushNamed(context, '/profile'),
-  //               child: const CircleAvatar(
-  //                 backgroundColor: Colors.grey,
-  //                 child: Icon(Icons.person, color: Colors.white),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.only(left: 16, top: 12),
@@ -242,7 +173,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _noSplashButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              "< Back",
+              '< Back',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
@@ -263,7 +194,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 child: SvgPicture.asset(
                   'assets/icons/settings.svg',
-                  color: Colors.white,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -296,7 +230,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Center(
                     child: Text(
-                      "Customize dashboard",
+                      'Customize dashboard',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -326,7 +260,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   Center(
                     child: Text(
-                      "Other settings",
+                      'Other settings',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

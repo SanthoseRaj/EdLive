@@ -26,4 +26,22 @@ class DashboardCounts {
       achievements: json['achievements'] ?? 0,
     );
   }
+
+  DashboardCounts copyWith({
+    int? notifications,
+    int? todo,
+    int? payments,
+    int? messages,
+    int? library,
+    int? achievements,
+  }) {
+    return DashboardCounts(
+      notifications: notifications ?? this.notifications,
+      todo: todo ?? this.todo,
+      payments: payments ?? this.payments,
+      messages: messages ?? this.messages,
+      library: library ?? this.library,
+      achievements: achievements ?? this.achievements,
+    );
+  }
 }

@@ -43,6 +43,12 @@
 		</array>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>Allow camera access to capture a student profile photo.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Allow photo library access to choose a student profile photo.</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>Allow saving profile photos when needed.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIStatusBarHidden</key>

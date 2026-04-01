@@ -7,9 +7,9 @@ import '/../services/transport_service.dart';
 
 class TransportPage extends StatefulWidget {
   final int staffId;
-  final String academicYear;
+  // final String academicYear;
 
-  const TransportPage({super.key, required this.staffId, required this.academicYear});
+  const TransportPage({super.key, required this.staffId});
 
   @override
   _TransportPageState createState() => _TransportPageState();
@@ -21,7 +21,7 @@ class _TransportPageState extends State<TransportPage> {
   @override
   void initState() {
     super.initState();
-    transportFuture = TransportService().getTransportDetails(widget.staffId, widget.academicYear);
+    transportFuture = TransportService().getTransportDetails(widget.staffId);
   }
 
   Widget buildInfoRow(String label, String value, {String? value2}) {

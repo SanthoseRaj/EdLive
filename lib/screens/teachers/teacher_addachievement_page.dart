@@ -443,7 +443,7 @@ ElevatedButton.icon(
         ? "Selected: ${_selectedFile!.path.split('/').last}"
         : _selectedFileName != null
             ? "Selected: $_selectedFileName"
-            : "Choose File (Images, PDF, DOC, TXT)"),
+            : "Choose File (Image)"),
   ),
 ),  const SizedBox(height: 16),
                               TextFormField(

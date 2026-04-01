@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:convert';
 
 import 'package:restart_app/restart_app.dart';
+import 'package:school_app/config/config.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'student_timetable.dart';
@@ -11,7 +12,6 @@ import 'student_exams_screen.dart';
 import 'student_syllabus_page.dart'; // ✅ Adjust the path if needed
 import 'student_events_holidays_page.dart'; // Adjust the path as needed
 import 'student_school_bus_page.dart';
-import 'student_settings_page.dart';
 import 'student_payments_page.dart';
 import 'student_report_page.dart';
 import 'student_achievement_page.dart';
@@ -25,16 +25,6 @@ class StudentMenuDrawer extends StatefulWidget {
 
 class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
   int? selectedIndex;
-
-  String getPastAcademicYear() {
-    final now = DateTime.now();
-    // If current month >= June, academic year started last year
-    if (now.month >= 6) {
-      return "${now.year - 1}-${now.year}";
-    } else {
-      return "${now.year - 2}-${now.year - 1}";
-    }
-  }
 
   final List<Map<String, String>> _menuItems = const [
     {'icon': 'todo.svg', 'label': 'My to do list', 'route': '/student-todo'},
@@ -141,13 +131,14 @@ class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
 
                           final selectedChild = jsonDecode(selectedChildString);
                           final studentId = selectedChild['id'].toString();
-                          final academicYear = getPastAcademicYear();
+                          if (AppConfig.academicYear.isEmpty) {
+                            AppConfig.setAcademicYear();
+                          }
 
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => StudentTimeTablePage(
-                                academicYear: academicYear,
                                 studentId: studentId,
                               ),
                             ),
@@ -216,67 +207,73 @@ class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
                           );
                         } else if (item['label'] == 'Settings') {
                           Navigator.pushNamed(context, '/student-settings');
+                        } else if (item['label'] == 'Fees') {
+                          // 👇 Add this new navigation block
+                          final prefs = await SharedPreferences.getInstance();
+                          final studentIdInt = prefs.getInt('student_id');
+                          if (studentIdInt == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Student ID not found'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final studentId = studentIdInt.toString();
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  StudentPaymentsPage(studentId: studentId),
+                            ),
+                          );
+                        } else if (item['label'] == 'Reports') {
+                          final prefs = await SharedPreferences.getInstance();
+                          final studentIdInt = prefs.getInt('student_id');
+                          if (studentIdInt == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Student ID not found'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  StudentReportPage(studentId: studentIdInt),
+                            ),
+                          );
+                        } else if (item['label'] == 'Achievements') {
+                          final prefs = await SharedPreferences.getInstance();
+                          final studentIdInt = prefs.getInt('student_id');
+                          final classId = prefs.getInt(
+                            'class_id',
+                          ); // make sure class_id is saved in SharedPreferences
+
+                          if (studentIdInt == null || classId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Student ID or Class ID not found',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  StudentAchievementPage(classId: classId),
+                            ),
+                          );
                         }
-
-                        else if (item['label'] == 'Fees') {
-  // 👇 Add this new navigation block
-  final prefs = await SharedPreferences.getInstance();
-  final studentIdInt = prefs.getInt('student_id');
-  if (studentIdInt == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Student ID not found')),
-    );
-    return;
-  }
-
-  final studentId = studentIdInt.toString();
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => StudentPaymentsPage(studentId: studentId),
-    ),
-  );
-}
-
-else if (item['label'] == 'Reports') {
-  final prefs = await SharedPreferences.getInstance();
-  final studentIdInt = prefs.getInt('student_id');
-  if (studentIdInt == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Student ID not found')),
-    );
-    return;
-  }
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => StudentReportPage(studentId: studentIdInt),
-    ),
-  );
-}
-
-else if (item['label'] == 'Achievements') {
-  final prefs = await SharedPreferences.getInstance();
-  final studentIdInt = prefs.getInt('student_id');
-  final classId = prefs.getInt('class_id'); // make sure class_id is saved in SharedPreferences
-
-  if (studentIdInt == null || classId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Student ID or Class ID not found')),
-    );
-    return;
-  }
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => StudentAchievementPage(classId: classId),
-    ),
-  );
-}
-
                       },
                     ),
                   );

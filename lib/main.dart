@@ -1,8 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:school_app/providers/teacher_library_copy_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/login_page.dart';
@@ -12,7 +9,6 @@ import 'screens/teachers/todo_list_screen.dart';
 import 'screens/teachers/class_time_pageview.dart';
 import 'screens/teachers/teacher_profile_page.dart';
 import 'screens/teachers/settings.dart';
-import 'screens/teachers/class_teacher_student_details_page.dart';
 import 'screens/teachers/teacher_attendance_page.dart';
 import 'screens/teachers/teacher_exam_page.dart';
 import 'screens/teachers/teacher_syllabus_page.dart';
@@ -28,7 +24,6 @@ import 'screens/students/student_achievement_page.dart  ';
 import 'package:school_app/screens/students/student_payments_page.dart';
 import 'screens/students/student_messages_page.dart';
 import 'screens/students/student_library_page.dart';
-import 'screens/students/student_exams_screen.dart';
 
 import 'providers/student_settings_provider.dart';
 
@@ -47,12 +42,14 @@ import 'providers/student_notification_dashboard_provider.dart';
 import 'providers/exam_result_provider.dart';
 import 'providers/teacher_dashboard_provider.dart';
 
-import 'screens/students/student_timetable.dart';
-
 import 'dart:convert';
+
+import 'config/config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  AppConfig.setAcademicYear(); // ✅ global
 
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('auth_token');
@@ -116,15 +113,77 @@ class MyApp extends StatelessWidget {
 
   Future<int> _getStaffId() async {
     final prefs = await SharedPreferences.getInstance();
-    final userDataString = prefs.getString('user_data');
+    final userData = _readJsonMap(prefs.getString('user_data'));
+    final selectedChild = _readJsonMap(prefs.getString('selected_child'));
+    final loggedInUserType = prefs.getString('user_type')?.toLowerCase();
 
-    if (userDataString != null) {
-      final userData = json.decode(userDataString);
-      if (userData['staffid'] != null && userData['staffid'].isNotEmpty) {
-        return userData['staffid'][0]; // pick first staffId
+    if (loggedInUserType != 'teacher') {
+      final selectedTeacherId = _resolveTeacherStaffId(selectedChild);
+      if (selectedTeacherId != null) {
+        return selectedTeacherId;
       }
     }
+
+    final userTeacherId =
+        _extractPositiveInt(userData?['staffid']) ??
+        _extractPositiveInt(userData?['teacher_id']) ??
+        _extractPositiveInt(userData?['staff_id']) ??
+        _extractPositiveInt(userData?['id']);
+    if (userTeacherId != null) {
+      return userTeacherId;
+    }
+
+    final storedTeacherId = prefs.getInt('teacher_id');
+    if (storedTeacherId != null && storedTeacherId > 0) {
+      return storedTeacherId;
+    }
+
     throw Exception('Staff ID not found');
+  }
+
+  Map<String, dynamic>? _readJsonMap(String? rawData) {
+    if (rawData == null || rawData.isEmpty) {
+      return null;
+    }
+
+    try {
+      return jsonDecode(rawData) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  int? _extractPositiveInt(dynamic value) {
+    if (value is int && value > 0) {
+      return value;
+    }
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed != null && parsed > 0) {
+        return parsed;
+      }
+    }
+    if (value is List && value.isNotEmpty) {
+      return _extractPositiveInt(value.first);
+    }
+    return null;
+  }
+
+  int? _resolveTeacherStaffId(Map<String, dynamic>? selectedChild) {
+    final selectedType =
+        selectedChild?['user_type']?.toString().toLowerCase() ?? '';
+    final isTeacherSelection =
+        selectedType == 'staff' || selectedType == 'teacher';
+
+    if (!isTeacherSelection) {
+      return null;
+    }
+
+    return _extractPositiveInt(selectedChild?['staffid']) ??
+        _extractPositiveInt(selectedChild?['teacher_id']) ??
+        _extractPositiveInt(selectedChild?['staff_id']) ??
+        _extractPositiveInt(selectedChild?['id']) ??
+        _extractPositiveInt(selectedChild?['user_id']);
   }
 
   @override
@@ -141,8 +200,14 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         // Handle the initial '/' route with token & userType logic first
         if (settings.name == '/') {
+          final selectedProfileType =
+              selectedChild?['user_type']?.toString().toLowerCase() ?? '';
+          final opensTeacherDashboard =
+              selectedProfileType == 'staff' ||
+              selectedProfileType == 'teacher';
+
           if (token != null) {
-            if (userType == 'teacher') {
+            if (userType == 'teacher' || opensTeacherDashboard) {
               return MaterialPageRoute(
                 builder: (_) => const TeacherDashboardPage(),
               );
@@ -179,10 +244,12 @@ class MyApp extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Scaffold(
+                      backgroundColor: Colors.white,
                       body: Center(child: CircularProgressIndicator()),
                     );
                   } else if (snapshot.hasError || !snapshot.hasData) {
                     return const Scaffold(
+                      backgroundColor: Colors.white,
                       body: Center(child: Text('Failed to load profile')),
                     );
                   } else {
@@ -211,7 +278,13 @@ class MyApp extends StatelessWidget {
           case '/student-details':
             final studentId = settings.arguments as int;
             return MaterialPageRoute(
-              builder: (_) => StudentDetailPage(studentId: studentId),
+              builder: (_) {
+                // return StudentDetailPage(studentId: studentId);
+                return StudentProfilePage(
+                  studentId: studentId,
+                  isTeacherView: true,
+                );
+              },
             );
           case '/student-profile':
             final id = settings.arguments as int;
@@ -220,14 +293,10 @@ class MyApp extends StatelessWidget {
             );
           case '/timetable':
             final args = settings.arguments as Map<String, dynamic>;
-            final year = args['year'] as String;
-            final studentId = args['studentId'] as String;
+            final studentId = args['studentId'].toString();
 
             return MaterialPageRoute(
-              builder: (_) => StudentTimeTablePage(
-                academicYear: year,
-                studentId: studentId,
-              ),
+              builder: (_) => StudentTimeTablePage(studentId: studentId),
             );
 
           case '/student-settings':

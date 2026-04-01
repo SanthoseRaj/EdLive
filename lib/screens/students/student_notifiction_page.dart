@@ -6,15 +6,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'student_notification_replies_page.dart'; // your replies page
 
 import 'package:school_app/screens/students/student_payments_page.dart';
+import 'student_achievement_page.dart';
+import 'student_library_book_detail_page.dart';
 import 'student_library_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'student_messages_page.dart';
+import 'student_todo_list_screen.dart';
+
+int _parseNotificationInt(dynamic value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is String) {
+    return int.tryParse(value.trim()) ?? 0;
+  }
+  return 0;
+}
 
 // ----------------- MODEL -----------------
 class StudentNotificationItem {
   final int id;
+  final int linkedItemId;
   final String title;
   final String subtitle;
   final String moduleType;
@@ -24,6 +37,7 @@ class StudentNotificationItem {
 
   StudentNotificationItem({
     required this.id,
+    required this.linkedItemId,
     required this.title,
     required this.subtitle,
     required this.moduleType,
@@ -33,8 +47,23 @@ class StudentNotificationItem {
   });
 
   factory StudentNotificationItem.fromJson(Map<String, dynamic> json) {
+    final nestedData = json['data'] is Map
+        ? Map<String, dynamic>.from(json['data'] as Map)
+        : <String, dynamic>{};
+    final notificationId = _parseNotificationInt(json['id']);
+    final linkedItemId = _parseNotificationInt(
+      json['item_id'] ??
+          json['module_item_id'] ??
+          json['module_id'] ??
+          json['resource_id'] ??
+          json['reference_id'] ??
+          nestedData['item_id'] ??
+          nestedData['id'],
+    );
+
     return StudentNotificationItem(
-      id: json['id'] ?? 0,
+      id: notificationId,
+      linkedItemId: linkedItemId,
       title: json['title'] ?? '',
       subtitle: json['content'] ?? '',
       moduleType: json['module_type'] ?? '',
@@ -55,12 +84,11 @@ class StudentNotificationPage extends StatefulWidget {
 }
 
 class _StudentNotificationPageState extends State<StudentNotificationPage> {
-  List<StudentNotificationItem> _notifications = [];
   bool _loading = true;
   String? _error;
-  DateTime _selectedDate = DateTime.now();
+  final DateTime _selectedDate = DateTime.now();
 
-  Set<int> _viewedIds = {};
+  final Set<int> _viewedIds = {};
 
   bool _fetchingMore = false;
   DateTime? _nextFetchDate; // for keeping track of next week's start date
@@ -70,11 +98,25 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
     final prefs = await SharedPreferences.getInstance();
     final classId = prefs.getInt('class_id') ?? 1;
     final studentId = prefs.getInt('student_id');
+    final linkedItemId = item.linkedItemId > 0 ? item.linkedItemId : null;
+
+    if (!mounted) {
+      return;
+    }
 
     switch (module) {
       case 'todo':
       case 'to-do':
-        Navigator.pushNamed(context, '/student-todo');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentToDoListPage(
+              initialTaskId: linkedItemId,
+              initialTaskTitle: item.title,
+              initialTaskDescription: item.subtitle,
+            ),
+          ),
+        );
         break;
 
       case 'exam':
@@ -88,10 +130,17 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
 
       case 'achievement':
       case 'achievements':
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/student-achievements',
-          arguments: {'classId': classId},
+          MaterialPageRoute(
+            builder: (_) => StudentAchievementPage(
+              classId: classId,
+              initialAchievementId: linkedItemId,
+              initialAchievementTitle: item.title,
+              initialAchievementDescription: item.subtitle,
+              autoOpenInitialDetail: true,
+            ),
+          ),
         );
         break;
 
@@ -99,10 +148,16 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
       case 'message':
       case 'messages':
         if (studentId != null) {
-          Navigator.pushNamed(
+          Navigator.push(
             context,
-            '/student-messages',
-            arguments: {'studentId': studentId},
+            MaterialPageRoute(
+              builder: (_) => StudentMessagesPage(
+                studentId: studentId,
+                initialMessageId: linkedItemId,
+                initialMessageTitle: item.title,
+                initialMessageText: item.subtitle,
+              ),
+            ),
           );
         }
         break;
@@ -124,10 +179,19 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
       // ✅ Library notification
       case 'library':
       case 'libraries':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const StudentLibraryPage()),
-        );
+        if (linkedItemId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentBookDetailPage(bookId: linkedItemId),
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const StudentLibraryPage()),
+          );
+        }
         break;
 
       default:
@@ -177,23 +241,6 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
       }
     } catch (e) {
       debugPrint("❌ Error marking notification viewed: $e");
-    }
-  }
-
-  Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _loading = true;
-      });
-      _fetchNotifications();
     }
   }
 
@@ -356,7 +403,10 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
                   padding: const EdgeInsets.all(8),
                   child: SvgPicture.asset(
                     'assets/icons/notification.svg',
-                    color: Colors.white,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -501,10 +551,10 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
                                     ),
                                   ),
                                 );
-                              }).toList(),
+                              }),
                             ],
                           );
-                        }).toList(),
+                        }),
 
                         // 🔹 Load More button at bottom
                         if (_nextFetchDate != null)
@@ -532,15 +582,7 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
   }
 }
 
-
-
-
-
-
-
 //Old Page Code (Reply Page section code)
-
-
 
 // import 'package:flutter/material.dart';
 // import 'package:flutter_svg/flutter_svg.dart';

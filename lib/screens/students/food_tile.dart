@@ -6,6 +6,7 @@ class FoodTile extends StatelessWidget {
   final String time;
   final List<dynamic> items;
   final bool checked;
+  final bool enabled;
   final ValueChanged<bool> onChanged;
 
   const FoodTile({
@@ -15,27 +16,43 @@ class FoodTile extends StatelessWidget {
     required this.time,
     required this.items,
     required this.checked,
+    required this.enabled,
     required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = enabled ? Colors.white : Colors.grey.shade200;
+    final borderColor = enabled ? Colors.grey.shade200 : Colors.grey.shade300;
+    final titleColor = enabled ? const Color(0xFF2E3192) : Colors.grey.shade500;
+    final timeColor = enabled ? Colors.grey : Colors.grey.shade500;
+    final itemTitleColor = enabled ? Colors.black : Colors.grey.shade500;
+    final itemDescriptionColor = enabled ? Colors.grey : Colors.grey.shade400;
+
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        border: Border.all(color: borderColor),
+        boxShadow: enabled
+            ? const [BoxShadow(color: Colors.black12, blurRadius: 4)]
+            : const [],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Checkbox(
-            value: checked,
-            fillColor: MaterialStateProperty.all(Colors.white),
+            value: enabled ? checked : false,
+            fillColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return Colors.grey.shade200;
+              }
+              return Colors.white;
+            }),
             checkColor: const Color(0xFF29ABE2),
-            onChanged: (value) => onChanged(value ?? false),
+            onChanged: enabled ? (value) => onChanged(value ?? false) : null,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -48,16 +65,16 @@ class FoodTile extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E3192),
+                          color: titleColor,
                         ),
                       ),
                     ),
                     Text(
                       time,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                      style: TextStyle(color: timeColor, fontSize: 13),
                     ),
                   ],
                 ),
@@ -70,16 +87,16 @@ class FoodTile extends StatelessWidget {
                       children: [
                         Text(
                           item["name"],
-                          style: const TextStyle(
-                            color: Colors.black,
+                          style: TextStyle(
+                            color: itemTitleColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
                         ),
                         Text(
                           item["description"],
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          style: TextStyle(
+                            color: itemDescriptionColor,
                             fontSize: 13,
                           ),
                         ),

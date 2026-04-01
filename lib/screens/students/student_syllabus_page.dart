@@ -7,7 +7,6 @@ import '../../models/student_syllabus_model.dart';
 import '../../services/student_syllabus_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class StudentSyllabusPage extends StatefulWidget {
   const StudentSyllabusPage({super.key});
 
@@ -16,23 +15,22 @@ class StudentSyllabusPage extends StatefulWidget {
 }
 
 class _StudentSyllabusPageState extends State<StudentSyllabusPage> {
-  late Future<List<SyllabusSubject>> _syllabusFuture;
+  Future<List<SyllabusSubject>>? _syllabusFuture;
 
-@override
-void initState() {
-  super.initState();
-  _loadSyllabus();
-}
+  @override
+  void initState() {
+    super.initState();
+    _loadSyllabus();
+  }
 
-void _loadSyllabus() async {
-  final prefs = await SharedPreferences.getInstance();
-  final classId = prefs.getInt('class_id') ?? 1; // fallback to 1 if null
+  void _loadSyllabus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final classId = prefs.getInt('class_id') ?? 1; // fallback to 1 if null
 
-  setState(() {
-    _syllabusFuture = SyllabusService().fetchSyllabusSubjects(classId);
-  });
-}
-
+    setState(() {
+      _syllabusFuture = SyllabusService().fetchSyllabusSubjects(classId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +50,10 @@ void _loadSyllabus() async {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Text('< Back',
-                        style: TextStyle(fontSize: 14, color: Colors.black)),
+                    child: const Text(
+                      '< Back',
+                      style: TextStyle(fontSize: 14, color: Colors.black),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -95,64 +95,71 @@ void _loadSyllabus() async {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(
-                        child: Text("Error: ${snapshot.error}",
-                            style: const TextStyle(color: Colors.red)));
+                      child: Text(
+                        "Error: ${snapshot.error}",
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Center(child: Text("No syllabus found"));
                   }
 
                   final subjects = snapshot.data!;
                   return ListView.builder(
-  padding: const EdgeInsets.all(16),
-  itemCount: subjects.length,
-  itemBuilder: (context, index) {
-    final subject = subjects[index];
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        title: Text(
-          subject.subjectName,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        // ⬅️ Removed subjectCode (no subtitle now)
-        trailing: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2BB5E4),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            minimumSize: const Size(80, 35),
-          ),
-        onPressed: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => SyllabusDetailPage(
-        classId: 1, // ✅ replace with actual classId
-        subjectId: subject.subjectId,
-        academicYear: "2025-2026", // ✅ can be dynamic
-        subjectName: subject.subjectName,
-      ),
-    ),
-  );
-},
+                    padding: const EdgeInsets.all(16),
+                    itemCount: subjects.length,
+                    itemBuilder: (context, index) {
+                      final subject = subjects[index];
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          title: Text(
+                            subject.subjectName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          // ⬅️ Removed subjectCode (no subtitle now)
+                          trailing: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2BB5E4),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              minimumSize: const Size(80, 35),
+                            ),
+                            onPressed: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final classId = prefs.getInt('class_id') ?? 1;
 
-          child: const Text(
-            'View',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
-    );
-  },
-);
-     },
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SyllabusDetailPage(
+                                    classId: classId,
+                                    subjectId: subject.subjectId,
+                                    academicYear: "2025-2026",
+                                    subjectName: subject.subjectName,
+                                  ),
+                                ),
+                              );
+                            },
+
+                            child: const Text(
+                              'View',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],

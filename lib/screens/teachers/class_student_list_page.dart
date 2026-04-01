@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/config/config.dart';
+
 import '../../models/teacher_class_student.dart';
 import '../../services/teacher_class_student_list.dart';
-import '/services/teacher_class_section_service.dart'; // new import
-import 'class_teacher_student_details_page.dart';
+import '/services/teacher_class_section_service.dart';
+import '../students/student_profile_page.dart';
+// import 'class_teacher_student_details_page.dart';
 
 class ClassStudentListPage extends StatefulWidget {
   const ClassStudentListPage({super.key});
@@ -15,9 +21,10 @@ class ClassStudentListPage extends StatefulWidget {
 class _ClassStudentListPageState extends State<ClassStudentListPage> {
   List<Student> students = [];
   List<TeacherClass> teacherClasses = [];
+  Map<int, String> studentImageUrls = {};
 
   bool isLoading = true;
-  String? selectedClassId; // use ID instead of string
+  String? selectedClassId;
   String? selectedClassName;
 
   @override
@@ -43,7 +50,7 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
         await fetchStudentsForClass(selectedClassId!);
       }
     } catch (e) {
-      debugPrint("❌ Error fetching classes: $e");
+      debugPrint("Error fetching classes: $e");
       setState(() => isLoading = false);
     }
   }
@@ -53,16 +60,89 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
-      final fetchedStudents = await StudentService.fetchStudents(token, );
+      final fetchedStudents = await StudentService.fetchStudents(token);
+      final initialImageUrls = <int, String>{};
+
+      for (final student in fetchedStudents) {
+        final imagePath = student.profileImagePath?.trim();
+        if (imagePath != null && imagePath.isNotEmpty) {
+          initialImageUrls[student.id] = imagePath;
+        }
+      }
 
       setState(() {
         students = fetchedStudents;
+        studentImageUrls = initialImageUrls;
         isLoading = false;
       });
+
+      await _loadStudentProfileImages(token, fetchedStudents);
     } catch (e) {
-      debugPrint("❌ Error fetching students: $e");
+      debugPrint("Error fetching students: $e");
       setState(() => isLoading = false);
     }
+  }
+
+  Future<void> _loadStudentProfileImages(
+    String token,
+    List<Student> studentList,
+  ) async {
+    final missingStudents = studentList
+        .where((student) => !studentImageUrls.containsKey(student.id))
+        .toList();
+
+    if (missingStudents.isEmpty) {
+      return;
+    }
+
+    final loadedEntries = await Future.wait(
+      missingStudents.map((student) async {
+        try {
+          final response = await http.get(
+            AppConfig.apiUri('/student/students/${student.id}'),
+            headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+          );
+
+          if (response.statusCode != 200) {
+            return MapEntry(student.id, null);
+          }
+
+          final payload = jsonDecode(response.body) as Map<String, dynamic>;
+          return MapEntry(student.id, _extractProfileImagePath(payload));
+        } catch (_) {
+          return MapEntry(student.id, null);
+        }
+      }),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      for (final entry in loadedEntries) {
+        final imagePath = entry.value?.trim();
+        if (imagePath != null && imagePath.isNotEmpty) {
+          studentImageUrls[entry.key] = imagePath;
+        }
+      }
+    });
+  }
+
+  String? _extractProfileImagePath(Map<String, dynamic> payload) {
+    for (final key in const [
+      'profile_img',
+      'profileImage',
+      'profile_image',
+      'image',
+    ]) {
+      final value = payload[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+
+    return null;
   }
 
   @override
@@ -75,7 +155,6 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Dropdown + student count
                   Row(
                     children: [
                       Expanded(
@@ -83,15 +162,16 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Select your class",
+                              'Select your class',
                               style: TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 4),
                             Container(
                               width: 120,
                               height: 40,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFCCCCCC),
                                 borderRadius: BorderRadius.circular(3),
@@ -116,8 +196,9 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
                                   setState(() {
                                     selectedClassId = value;
                                     selectedClassName = teacherClasses
-                                        .firstWhere((c) =>
-                                            c.id.toString() == value)
+                                        .firstWhere(
+                                          (c) => c.id.toString() == value,
+                                        )
                                         .fullName;
                                     isLoading = true;
                                   });
@@ -133,7 +214,7 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "${students.length} students",
+                            '${students.length} students',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
@@ -141,7 +222,7 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            "You are class teacher",
+                            'You are class teacher',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -153,24 +234,27 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Students list
                   students.isEmpty
                       ? const Center(child: Text('No students in this class.'))
                       : Column(
-                          children:
-                              students.asMap().entries.map((entry) {
+                          children: students.asMap().entries.map((entry) {
                             final index = entry.key + 1;
                             final student = entry.value;
                             return _StudentRow(
-                              name: "$index. ${student.studentName}",
-                              studentId: student.id,
+                              name: '$index. ${student.studentName}',
+                              imageUrl:
+                                  studentImageUrls[student.id] ??
+                                  student.profileImagePath,
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        StudentDetailPage(studentId: student.id),
+                                    // builder: (_) =>
+                                    //     StudentDetailPage(studentId: student.id),
+                                    builder: (_) => StudentProfilePage(
+                                      studentId: student.id,
+                                      isTeacherView: true,
+                                    ),
                                   ),
                                 );
                               },
@@ -186,21 +270,15 @@ class _ClassStudentListPageState extends State<ClassStudentListPage> {
 
 class _StudentRow extends StatelessWidget {
   final String name;
-  final int studentId;
-  final VoidCallback onTap;
-  final bool alert;
   final String? imageUrl;
+  final VoidCallback onTap;
 
-  const _StudentRow({
-    required this.name,
-    required this.studentId,
-    required this.onTap,
-    this.alert = false,
-    this.imageUrl,
-  });
+  const _StudentRow({required this.name, this.imageUrl, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final trimmedImageUrl = imageUrl?.trim() ?? '';
+
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -210,15 +288,15 @@ class _StudentRow extends StatelessWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.grey,
-                backgroundImage:
-                    imageUrl != null ? NetworkImage(imageUrl!) : null,
-                child: imageUrl == null
+                backgroundImage: trimmedImageUrl.isNotEmpty
+                    ? NetworkImage(AppConfig.absoluteUrl(trimmedImageUrl))
+                    : null,
+                child: trimmedImageUrl.isEmpty
                     ? const Icon(Icons.person, color: Colors.white)
                     : null,
               ),
               const SizedBox(width: 12),
               Expanded(child: Text(name)),
-              if (alert) const Icon(Icons.error_outline, color: Colors.red),
             ],
           ),
           const Divider(color: Colors.grey, thickness: 0.5, height: 16),

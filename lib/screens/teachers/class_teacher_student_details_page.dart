@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:school_app/widgets/teacher_app_bar.dart';
 import 'teacher_menu_drawer.dart';
 
-
+  
 
 class StudentDetailPage extends StatefulWidget {
   final int studentId;

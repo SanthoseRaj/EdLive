@@ -7,18 +7,26 @@ class TeacherExamResultDetailService {
   final String baseUrl =
       "https://schoolmanagement.canadacentral.cloudapp.azure.com:443";
 
-  Future<ExamResultData?> fetchStudentExamResults(int studentId) async {
+  Future<ExamResultData?> fetchStudentExamResults(
+    int studentId, {
+    int? examTypeId,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
 
-    final url = Uri.parse('$baseUrl/api/exams/results/student/$studentId');
+    final queryParameters = <String, String>{};
+    if (examTypeId != null && examTypeId > 0) {
+      queryParameters['examTypeId'] = examTypeId.toString();
+    }
+
+    final url = Uri.parse('$baseUrl/api/exams/results/student/$studentId')
+        .replace(
+          queryParameters: queryParameters.isEmpty ? null : queryParameters,
+        );
 
     final response = await http.get(
       url,
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -31,7 +39,8 @@ class TeacherExamResultDetailService {
       }
     } else {
       throw Exception(
-          "Error fetching results: ${response.statusCode} ${response.reasonPhrase}");
+        "Error fetching results: ${response.statusCode} ${response.reasonPhrase}",
+      );
     }
   }
 }

@@ -56,95 +56,112 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        if (isAdding) {
+          setState(() => _resetForm());
+          return false; // ❌ prevent pop
+        } else if (_selectedTerm != null) {
+          setState(() => _selectedTerm = null);
+          return false; // ❌ prevent pop
+        }
+        return true; // ✅ allow pop
+      },
+      child: Scaffold(
         backgroundColor: const Color(0xFFA7D7A7),
-      appBar: TeacherAppBar(),
-      drawer: MenuDrawer(),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🔙 Back
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: GestureDetector(
-                onTap: () {
-                  if (isAdding) {
-                    setState(() => _resetForm());
-                  } else if (_selectedTerm != null) {
-                    setState(() => _selectedTerm = null);
-                  } else {
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text(
-                  '< Back',
-                  style: TextStyle(fontSize: 14, color: Colors.black),
+        appBar: TeacherAppBar(),
+        drawer: MenuDrawer(),
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🔙 Back
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    if (isAdding) {
+                      setState(() => _resetForm());
+                    } else if (_selectedTerm != null) {
+                      setState(() => _selectedTerm = null);
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text(
+                    '< Back',
+                    style: TextStyle(fontSize: 14, color: Colors.black),
+                  ),
                 ),
               ),
-            ),
 
-            // 📘 Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 35,
-                    height: 35,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E3192),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: SvgPicture.asset(
-                      'assets/icons/syllabus.svg',
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.subject,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E3192),
+              // 📘 Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 35,
+                      height: 35,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2E3192),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: SvgPicture.asset(
+                        'assets/icons/syllabus.svg',
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                  // Add button
-                  ElevatedButton.icon(
-                    onPressed: () => setState(() => isAdding = true),
-                    icon: const Icon(Icons.add, size: 20),
-                    label: const Text("Add"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF29ABE2),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.subject,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E3192),
+                        ),
                       ),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     ),
-                  ),
-                ],
+                    // Add button
+                    ElevatedButton.icon(
+                      onPressed: () => setState(() => isAdding = true),
+                      icon: const Icon(Icons.add, size: 20),
+                      label: const Text("Add"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF29ABE2),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 🔹 List / Detail / Add Form
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: isAdding
-                    ? _buildAddForm()
-                    : (_selectedTerm != null
-                        ? _buildDetailView(_selectedTerm!)
-                        : _buildSyllabusList()),
+              // 🔹 List / Detail / Add Form
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: isAdding
+                      ? _buildAddForm()
+                      : (_selectedTerm != null
+                            ? _buildDetailView(_selectedTerm!)
+                            : _buildSyllabusList()),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -200,10 +217,7 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
                     if (desc.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          desc,
-                          style: const TextStyle(fontSize: 14),
-                        ),
+                        child: Text(desc, style: const TextStyle(fontSize: 14)),
                       ),
                   ],
                 ),
@@ -224,8 +238,11 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(
-              child: Text("Error: ${snapshot.error}",
-                  style: const TextStyle(color: Colors.red)));
+            child: Text(
+              "Error: ${snapshot.error}",
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text("No syllabus details found"));
         }
@@ -283,7 +300,11 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: const [
-              BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
             ],
           ),
           child: Column(
@@ -365,7 +386,9 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
                       onTap: () async {
                         if (selectedSyllabusId == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please select a term")),
+                            const SnackBar(
+                              content: Text("Please select a term"),
+                            ),
                           );
                           return;
                         }
@@ -386,9 +409,9 @@ class _SyllabusDetailPageState extends State<SyllabusDetailPage> {
                             _resetForm();
                           });
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Error: $e")),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text("Error: $e")));
                         }
                       },
                       child: Container(

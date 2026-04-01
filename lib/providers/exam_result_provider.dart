@@ -7,12 +7,12 @@ class ExamResultProvider extends ChangeNotifier {
 
   bool isSaving = false;
 
-  Future<void> saveResult(ExamResult result) async {
+  Future<int?> saveResult(ExamResult result, {int? resultId}) async {
     isSaving = true;
     notifyListeners();
 
     try {
-      await _service.saveExamResult(result);
+      return await _service.saveExamResult(result, resultId: resultId);
     } catch (e) {
       rethrow;
     } finally {

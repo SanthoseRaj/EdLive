@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:school_app/config/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '/widgets/student_app_bar.dart';
@@ -36,12 +37,10 @@ class StudentTimetableItem {
 
 // ----------------- PAGE -----------------
 class StudentTimeTablePage extends StatefulWidget {
-  final String academicYear;
   final String studentId; // 👈 you must pass Student ID
 
   const StudentTimeTablePage({
     super.key,
-    required this.academicYear,
     required this.studentId,
   });
 
@@ -67,6 +66,9 @@ class _StudentTimeTablePageState extends State<StudentTimeTablePage> {
   @override
   void initState() {
     super.initState();
+    if (AppConfig.academicYear.isEmpty) {
+      AppConfig.setAcademicYear();
+    }
     _centerDate = DateTime.now();
     _startDate = _centerDate.subtract(Duration(days: _centerDate.weekday - 1));
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -89,7 +91,7 @@ class _StudentTimeTablePageState extends State<StudentTimeTablePage> {
       }
 
       final url =
-          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/timetable/${widget.studentId}/${widget.academicYear}";
+          "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api/student/students/timetable/${widget.studentId}/${AppConfig.academicYear}";
       final response = await http.get(
         Uri.parse(url),
         headers: {"Authorization": "Bearer $token"},

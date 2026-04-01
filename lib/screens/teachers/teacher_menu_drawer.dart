@@ -181,15 +181,12 @@ class _MenuDrawerState extends State<MenuDrawer> {
                               }
                             }
 
-                            final now = DateTime.now();
-                            final academicYear = '${now.year}-${now.year + 1}';
-
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => TransportPage(
                                   staffId: staffId,
-                                  academicYear: academicYear,
+                                  // academicYear: academicYear,
                                 ),
                               ),
                             );

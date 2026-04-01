@@ -7,18 +7,20 @@ class TransportService {
   static const String baseUrl =
       "https://schoolmanagement.canadacentral.cloudapp.azure.com:443/api";
 
-  static Future<Transport?> fetchStudentTransport(int studentId, String academicYear) async {
+  static Future<Transport?> fetchStudentTransport(
+    int studentId,
+    String academicYear,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token'); // saved during login
 
-    final url = Uri.parse("$baseUrl/transport/students/$studentId/$academicYear");
+    final url = Uri.parse(
+      "$baseUrl/transport/students/$studentId/$academicYear",
+    );
 
     final response = await http.get(
       url,
-      headers: {
-        "accept": "application/json",
-        "Authorization": "Bearer $token",
-      },
+      headers: {"accept": "application/json", "Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {
