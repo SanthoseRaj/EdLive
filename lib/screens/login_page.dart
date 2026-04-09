@@ -13,7 +13,6 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-
   State<LoginPage> createState() => _LoginPageState();
 }
 
@@ -75,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
           .timeout(const Duration(seconds: 20));
 
       if (response.statusCode != 200) {
-        _showError(_extractErrorMessage(response.body));
+        _showError(_extractHttpErrorMessage(response));
         return;
       }
 
@@ -136,11 +135,11 @@ class _LoginPageState extends State<LoginPage> {
 
       _showError('Unsupported user type.');
     } on TimeoutException catch (e) {
-      _showError(AppConfig.networkErrorMessage(e));
+      _showError(_extractExceptionMessage(e));
     } on http.ClientException catch (e) {
-      _showError(AppConfig.networkErrorMessage(e));
+      _showError(_extractExceptionMessage(e));
     } catch (e) {
-      _showError(AppConfig.networkErrorMessage(e));
+      _showError(_extractExceptionMessage(e));
     } finally {
       if (mounted) {
         setState(() {
@@ -246,15 +245,125 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  String _extractErrorMessage(String responseBody) {
+  String _extractHttpErrorMessage(http.Response response) {
+    final statusCode = response.statusCode;
+    final reasonPhrase = response.reasonPhrase?.trim();
+    final responseBody = utf8
+        .decode(response.bodyBytes, allowMalformed: true)
+        .trim();
+    final detail = _extractErrorDetail(responseBody);
+
+    if (detail != null && detail.isNotEmpty) {
+      return 'Login failed [$statusCode]: $detail';
+    }
+
+    if (reasonPhrase != null && reasonPhrase.isNotEmpty) {
+      return 'Login failed [$statusCode]: $reasonPhrase';
+    }
+
+    return 'Login failed [$statusCode]';
+  }
+
+  String _extractExceptionMessage(Object error) {
+    final rawMessage = error.toString().trim();
+    final cleanedMessage = rawMessage
+        .replaceFirst(RegExp(r'^(Exception|Error):\s*'), '')
+        .replaceFirst(RegExp(r'^(ClientException|TimeoutException):\s*'), '')
+        .trim();
+
+    if (cleanedMessage.isEmpty) {
+      return 'Login request failed.';
+    }
+
+    return _truncateMessage(cleanedMessage);
+  }
+
+  String? _extractErrorDetail(String responseBody) {
+    if (responseBody.isEmpty) {
+      return null;
+    }
+
     try {
       final decoded = json.decode(responseBody);
-      if (decoded is Map<String, dynamic>) {
-        return decoded['message']?.toString() ?? 'Login failed';
+      final message = _extractErrorText(decoded);
+      if (message != null && message.isNotEmpty) {
+        return _truncateMessage(message);
       }
-    } catch (_) {}
+    } on FormatException {
+      // Some backends return HTML or plain-text error pages.
+    }
 
-    return 'Login failed';
+    final plainText = _stripHtml(responseBody);
+    if (plainText.isEmpty) {
+      return null;
+    }
+
+    return _truncateMessage(plainText);
+  }
+
+  String? _extractErrorText(dynamic decoded) {
+    if (decoded is String) {
+      final message = decoded.trim();
+      return message.isEmpty ? null : message;
+    }
+
+    if (decoded is List) {
+      for (final item in decoded) {
+        final message = _extractErrorText(item);
+        if (message != null && message.isNotEmpty) {
+          return message;
+        }
+      }
+      return null;
+    }
+
+    if (decoded is Map) {
+      for (final key in const ['message', 'error', 'detail', 'title', 'msg']) {
+        final message = _extractErrorText(decoded[key]);
+        if (message != null && message.isNotEmpty) {
+          return message;
+        }
+      }
+
+      for (final value in decoded.values) {
+        final message = _extractErrorText(value);
+        if (message != null && message.isNotEmpty) {
+          return message;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  String _stripHtml(String value) {
+    final withoutScripts = value.replaceAll(
+      RegExp(r'<script[^>]*>[\s\S]*?</script>', caseSensitive: false),
+      ' ',
+    );
+    final withoutStyles = withoutScripts.replaceAll(
+      RegExp(r'<style[^>]*>[\s\S]*?</style>', caseSensitive: false),
+      ' ',
+    );
+    final withoutTags = withoutStyles.replaceAll(RegExp(r'<[^>]+>'), ' ');
+
+    return withoutTags
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  String _truncateMessage(String value, {int maxLength = 220}) {
+    if (value.length <= maxLength) {
+      return value;
+    }
+
+    return '${value.substring(0, maxLength).trim()}...';
   }
 
   void _showError(String message) {

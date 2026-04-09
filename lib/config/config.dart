@@ -1,52 +1,70 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
+  // ✅ Production backend
+  // static const String defaultServerOrigin =
+  //     'https://schoolmanagement.canadacentral.cloudapp.azure.com';
+
   static const String defaultServerOrigin =
-      'https://schoolmanagement.canadacentral.cloudapp.azure.com:443';
-  static const String defaultApiBaseUrl = '$defaultServerOrigin/api';
+      'https://edlive-web-backend-1.onrender.com';
+
+  // ✅ Local backend
+  static const String localServerOrigin = 'http://localhost:5000';
+
+  // ✅ Optional local web proxy (only if you really use one)
   static const String localProxyOrigin = 'http://127.0.0.1:8081';
 
+  // ✅ Compile-time overrides
   static const String _serverOriginOverride = String.fromEnvironment(
     'SERVER_ORIGIN',
     defaultValue: '',
   );
+
   static const String _apiBaseUrlOverride = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: '',
   );
 
-  static String get serverOrigin {
-    if (_serverOriginOverride.isNotEmpty) {
-      return _serverOriginOverride;
-    }
-
-    if (_shouldUseLocalProxy) {
-      return localProxyOrigin;
-    }
-
-    return defaultServerOrigin;
-  }
-
-  static String get baseUrl {
-    if (_apiBaseUrlOverride.isNotEmpty) {
-      return _apiBaseUrlOverride;
-    }
-
-    return '$serverOrigin/api';
-  }
-
-  static const String tokenKey = 'authu_token';
-  static const String userTypeKey = 'usertype';
-  static const String userIdKey = 'userId';
-  static const String academicYearKey = 'academicYear';
   static const String _academicYearOverride = String.fromEnvironment(
     'ACADEMIC_YEAR',
     defaultValue: '',
   );
 
-  // ✅ GLOBAL ACADEMIC YEAR
+  // ✅ Storage keys
+  static const String tokenKey = 'authu_token';
+  static const String userTypeKey = 'usertype';
+  static const String userIdKey = 'userId';
+  static const String academicYearKey = 'academicYear';
+
+  // ✅ Global academic year cache
   static String _academicYear = '';
 
+  /// ✅ Resolved server origin
+  static String get serverOrigin {
+    // 1. Highest priority → manual override from command
+    if (_serverOriginOverride.isNotEmpty) {
+      return _normalizeOrigin(_serverOriginOverride);
+    }
+
+    // 2. If running Flutter Web in localhost, use local backend
+    if (_shouldUseLocalBackend) {
+      return localServerOrigin;
+    }
+
+    // 3. All deployed environments use production backend
+    return defaultServerOrigin;
+  }
+
+  /// ✅ Resolved API base URL
+  static String get baseUrl {
+    if (_apiBaseUrlOverride.isNotEmpty) {
+      return _removeTrailingSlash(_apiBaseUrlOverride);
+    }
+
+    return '${_removeTrailingSlash(serverOrigin)}/api';
+  }
+
+  /// ✅ Academic year getter
   static String get academicYear {
     if (_academicYearOverride.isNotEmpty) {
       return _academicYearOverride;
@@ -59,10 +77,12 @@ class AppConfig {
     return _academicYear;
   }
 
+  /// ✅ Academic year setter
   static set academicYear(String value) {
     _academicYear = value.trim();
   }
 
+  /// ✅ Set academic year manually or auto-calculate
   static void setAcademicYear([String? value]) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isNotEmpty) {
@@ -73,56 +93,80 @@ class AppConfig {
     academicYear = _calculateAcademicYear(DateTime.now());
   }
 
+  /// ✅ Academic year calculation
   static String _calculateAcademicYear(DateTime now) {
     if (now.month >= 6) {
       return '${now.year}-${now.year + 1}';
     }
-
     return '${now.year - 1}-${now.year}';
   }
 
-  // ✅ API URI BUILDER
+  /// ✅ Build API Uri safely
   static Uri apiUri(String path, {Map<String, dynamic>? queryParameters}) {
     final normalizedPath = path.startsWith('/') ? path : '/$path';
+
     return Uri.parse('$baseUrl$normalizedPath').replace(
-      queryParameters: queryParameters?.map(
-        (key, value) => MapEntry(key, value.toString()),
-      ),
+      queryParameters: queryParameters == null
+          ? null
+          : queryParameters.map(
+              (key, value) => MapEntry(key, value.toString()),
+            ),
     );
   }
 
+  /// ✅ Convert relative path to full absolute URL
   static String absoluteUrl(String path) {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
 
+    final normalizedOrigin = _removeTrailingSlash(serverOrigin);
+
     if (path.startsWith('/')) {
-      return '$serverOrigin$path';
+      return '$normalizedOrigin$path';
     }
 
-    return '$serverOrigin/$path';
+    return '$normalizedOrigin/$path';
   }
 
+  /// ✅ Friendly network error for UI
   static String networkErrorMessage(Object error) {
     final message = error.toString().toLowerCase();
+
     if (message.contains('xmlhttprequest') ||
         message.contains('failed host lookup') ||
         message.contains('socketexception') ||
         message.contains('clientexception') ||
         message.contains('timed out') ||
         message.contains('connection closed')) {
-      return 'Server could not be reached from this browser. On Flutter web, this usually means the backend is blocking CORS or you need to route requests through a local proxy.';
+      return 'Server could not be reached. If you are using Flutter Web, check whether CORS is enabled in the backend and confirm the backend URL is correct.';
     }
 
     return 'An unexpected network error occurred. Please try again.';
   }
 
-  static bool get _shouldUseLocalProxy {
+  /// ✅ Local detection
+  static bool get _shouldUseLocalBackend {
+    // Mobile/desktop local run
     if (!kIsWeb) {
-      return false;
+      return true;
     }
 
+    // Web local run
     final host = Uri.base.host.toLowerCase();
     return host == 'localhost' || host == '127.0.0.1';
+  }
+
+  /// ✅ Remove trailing slash
+  static String _removeTrailingSlash(String value) {
+    if (value.endsWith('/')) {
+      return value.substring(0, value.length - 1);
+    }
+    return value;
+  }
+
+  /// ✅ Normalize origin
+  static String _normalizeOrigin(String value) {
+    return _removeTrailingSlash(value.trim());
   }
 }
