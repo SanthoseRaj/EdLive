@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:school_app/providers/teacher_settings_provider.dart';
+import 'package:school_app/widgets/reset_password_section.dart';
 
 import 'package:school_app/widgets/teacher_app_bar.dart';
 
@@ -54,32 +55,13 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildHeader(),
               _buildTabBar(),
               Expanded(
-                child: _selectedTab == 0
-                    ? _buildDashboardSettings(settings)
-                    : ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: [
-                          const SizedBox(height: 50),
-                          Container(
-                            height: 50,
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF29ABE2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'Reset password',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                child: IndexedStack(
+                  index: _selectedTab,
+                  children: [
+                    _buildDashboardSettings(settings),
+                    _buildOtherSettings(),
+                  ],
+                ),
               ),
             ],
           ),
@@ -150,6 +132,14 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildOtherSettings() {
+    return ListView(
+      key: const PageStorageKey<String>('teacher-other-settings'),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: const [SizedBox(height: 50), ResetPasswordSection()],
     );
   }
 

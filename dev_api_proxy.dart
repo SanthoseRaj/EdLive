@@ -1,12 +1,11 @@
 import 'dart:io';
 
 // const String _defaultBackendOrigin =
-//     'https://schoolmanagement.canadacentral.cloudapp.azure.com';
+    // 'https://schoolmanagement.canadacentral.cloudapp.azure.com';
 
 const String _defaultBackendOrigin =
     'https://edlive-web-backend-1.onrender.com';
 
-    
 const String _listenHost = String.fromEnvironment(
   'PROXY_HOST',
   defaultValue: '127.0.0.1',

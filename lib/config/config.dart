@@ -10,6 +10,7 @@ class AppConfig {
 
   // ✅ Local backend
   static const String localServerOrigin = 'http://localhost:5000';
+  static const String androidEmulatorServerOrigin = 'http://10.0.2.2:5000';
 
   // ✅ Optional local web proxy (only if you really use one)
   static const String localProxyOrigin = 'http://127.0.0.1:8081';
@@ -48,7 +49,7 @@ class AppConfig {
 
     // 2. If running Flutter Web in localhost, use local backend
     if (_shouldUseLocalBackend) {
-      return localServerOrigin;
+      return _resolvedLocalServerOrigin;
     }
 
     // 3. All deployed environments use production backend
@@ -106,11 +107,9 @@ class AppConfig {
     final normalizedPath = path.startsWith('/') ? path : '/$path';
 
     return Uri.parse('$baseUrl$normalizedPath').replace(
-      queryParameters: queryParameters == null
-          ? null
-          : queryParameters.map(
-              (key, value) => MapEntry(key, value.toString()),
-            ),
+      queryParameters: queryParameters?.map(
+        (key, value) => MapEntry(key, value.toString()),
+      ),
     );
   }
 
@@ -155,6 +154,14 @@ class AppConfig {
     // Web local run
     final host = Uri.base.host.toLowerCase();
     return host == 'localhost' || host == '127.0.0.1';
+  }
+
+  static String get _resolvedLocalServerOrigin {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return androidEmulatorServerOrigin;
+    }
+
+    return localServerOrigin;
   }
 
   /// ✅ Remove trailing slash

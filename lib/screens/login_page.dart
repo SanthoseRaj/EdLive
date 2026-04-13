@@ -57,6 +57,14 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      _showError('Please enter both username and password.');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -66,10 +74,7 @@ class _LoginPageState extends State<LoginPage> {
           .post(
             AppConfig.apiUri('/auth/login'),
             headers: {'Content-Type': 'application/json'},
-            body: json.encode({
-              'username': _usernameController.text.trim(),
-              'password': _passwordController.text.trim(),
-            }),
+            body: json.encode({'username': username, 'password': password}),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -253,15 +258,62 @@ class _LoginPageState extends State<LoginPage> {
         .trim();
     final detail = _extractErrorDetail(responseBody);
 
+    if (_isInvalidCredentialsError(
+      statusCode: statusCode,
+      detail: detail,
+      reasonPhrase: reasonPhrase,
+    )) {
+      return 'Username or password is incorrect. Please try again.';
+    }
+
     if (detail != null && detail.isNotEmpty) {
-      return 'Login failed [$statusCode]: $detail';
+      return detail;
     }
 
     if (reasonPhrase != null && reasonPhrase.isNotEmpty) {
-      return 'Login failed [$statusCode]: $reasonPhrase';
+      return 'Login failed. $reasonPhrase';
     }
 
-    return 'Login failed [$statusCode]';
+    if (statusCode >= 500) {
+      return 'Server error while logging in. Please try again.';
+    }
+
+    return 'Login failed. Please try again.';
+  }
+
+  bool _isInvalidCredentialsError({
+    required int statusCode,
+    required String? detail,
+    required String? reasonPhrase,
+  }) {
+    if (statusCode == 401) {
+      return true;
+    }
+
+    final normalizedDetail = detail?.toLowerCase() ?? '';
+    final normalizedReason = reasonPhrase?.toLowerCase() ?? '';
+    final combinedMessage = '$normalizedDetail $normalizedReason';
+    const invalidCredentialHints = <String>[
+      'invalid credential',
+      'invalid credentials',
+      'invalid username',
+      'invalid password',
+      'invalid username or password',
+      'incorrect credential',
+      'incorrect credentials',
+      'incorrect password',
+      'wrong password',
+      'wrong username',
+      'bad credentials',
+      'username or password',
+      'login failed',
+    ];
+
+    if (statusCode != 400 && statusCode != 403) {
+      return false;
+    }
+
+    return invalidCredentialHints.any(combinedMessage.contains);
   }
 
   String _extractExceptionMessage(Object error) {
