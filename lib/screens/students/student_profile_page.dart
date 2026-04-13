@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -84,10 +83,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   }
 
   Future<void> _launchActionUri(Uri uri, String errorMessage) async {
-    final launched = await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication,
-    );
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
     if (!launched && mounted) {
       ScaffoldMessenger.of(
@@ -102,10 +98,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       return;
     }
 
-    _launchActionUri(
-      Uri.parse('tel:$phoneNumber'),
-      'Could not open phone app',
-    );
+    _launchActionUri(Uri.parse('tel:$phoneNumber'), 'Could not open phone app');
   }
 
   void _openEmail(String value) {
@@ -115,10 +108,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     }
 
     _launchActionUri(
-      Uri(
-        scheme: 'mailto',
-        path: email,
-      ),
+      Uri(scheme: 'mailto', path: email),
       'Could not open email app',
     );
   }
@@ -778,47 +768,27 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           ),
         ),
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 24),
-              _networkImage(imageUrl, size: 110),
-              const SizedBox(height: 10),
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2E3192),
-                ),
-              ),
-              Text(
-                '($role)',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 12),
-              _info('Mobile', mobile),
-              _info('Email', email),
-            ],
-          ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: () => debugPrint('Edit $role'),
-              child: SvgPicture.asset(
-                'assets/icons/pencil.svg',
-                height: 20,
-                width: 20,
-                colorFilter: const ColorFilter.mode(
-                  Colors.black,
-                  BlendMode.srcIn,
-                ),
-              ),
+          const SizedBox(height: 24),
+          _networkImage(imageUrl, size: 110),
+          const SizedBox(height: 10),
+          Text(
+            name,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2E3192),
             ),
           ),
+          Text(
+            '($role)',
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          _info('Mobile', mobile),
+          _info('Email', email),
         ],
       ),
     );

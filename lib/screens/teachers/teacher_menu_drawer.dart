@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:restart_app/restart_app.dart';
 import 'dart:convert';
+
+import 'package:school_app/services/session_service.dart';
 
 import 'teacher_achivement_page.dart';
 import 'teacher_report_page.dart';
@@ -68,6 +69,16 @@ class _MenuDrawerState extends State<MenuDrawer> {
     {'icon': 'logout.svg', 'label': 'Logout', 'route': '/'},
   ];
 
+  Future<void> _handleLogout() async {
+    await SessionService.clearStoredSession();
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,24 +136,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
                           setState(() => _selectedIndex = index);
 
                           if (item['label'] == 'Logout') {
-                            // 1. Clear all stored data
-                            final prefs = await SharedPreferences.getInstance();
-                            await prefs
-                                .clear(); // Clear everything, not just auth_token
-
-                            // 2. Reset any app state if using Provider/Riverpod/GetX
-                            // Example with Provider:
-                            // context.read<AuthProvider>().logout();
-
-                            // 3. Navigate to login page and remove all previous routes
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              '/', // Replace with your login route if different
-                              (route) => false,
-                            );
-
-                            // 4. Force a full app restart
-                            await Restart.restartApp(); // Requires restart_app package
+                            await _handleLogout();
                           } else if (item['route'] == '/achievements') {
                             Navigator.push(
                               context,
@@ -254,8 +248,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
                             '/events',
                           ].contains(item['route'])) {
                             Navigator.pushNamed(context, item['route']);
-                          }
-                          {
+                          } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

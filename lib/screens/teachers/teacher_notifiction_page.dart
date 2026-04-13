@@ -168,16 +168,25 @@ class _TeacherNotificationPageState extends State<TeacherNotificationPage> {
           ..sort((a, b) => b.key.compareTo(a.key)),
       );
 
+      final shouldAutoFetchPrevious = !hasData && _nextFetchDate != null;
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _notificationsByDate = sortedGrouped;
-        _loading = false;
-        _fetchingMore = false;
+        _loading = shouldAutoFetchPrevious && sortedGrouped.isEmpty;
+        _fetchingMore = shouldAutoFetchPrevious;
       });
 
-      if (!hasData && _nextFetchDate != null) {
+      if (shouldAutoFetchPrevious) {
         await _fetchNotifications(loadMore: true);
       }
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _loading = false;
         _fetchingMore = false;

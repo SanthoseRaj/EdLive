@@ -342,20 +342,29 @@ class _StudentNotificationPageState extends State<StudentNotificationPage> {
           ..sort((a, b) => b.key.compareTo(a.key)),
       );
 
+      final shouldAutoFetchPrevious = !hasData && _nextFetchDate != null;
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _notificationsByDate = sortedGrouped;
-        _loading = false;
-        _fetchingMore = false;
+        _loading = shouldAutoFetchPrevious && sortedGrouped.isEmpty;
+        _fetchingMore = shouldAutoFetchPrevious;
       });
 
       // 🔹 If week empty, automatically fetch previous week
-      if (!hasData && _nextFetchDate != null) {
+      if (shouldAutoFetchPrevious) {
         debugPrint(
           "📅 Current week empty. Auto-fetching previous week ending ${_nextFetchDate}",
         );
-        _fetchNotifications(loadMore: true);
+        await _fetchNotifications(loadMore: true);
       }
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _loading = false;
         _fetchingMore = false;

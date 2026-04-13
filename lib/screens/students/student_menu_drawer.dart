@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:convert';
 
-import 'package:restart_app/restart_app.dart';
 import 'package:school_app/config/config.dart';
+import 'package:school_app/services/session_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'student_timetable.dart';
@@ -46,6 +46,16 @@ class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
     {'icon': 'settings.svg', 'label': 'Settings', 'route': '/student-settings'},
     {'icon': 'logout.svg', 'label': 'Logout', 'route': '/'},
   ];
+
+  Future<void> _handleLogout() async {
+    await SessionService.clearStoredSession();
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,20 +110,7 @@ class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
                         final prefs = await SharedPreferences.getInstance();
 
                         if (item['label'] == 'Logout') {
-                          // 1. Clear all stored data
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs
-                              .clear(); // Clear everything, not just auth_token
-
-                          // 2. Navigate to login page and remove all previous routes
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/', // Replace with your login route if different
-                            (route) => false,
-                          );
-
-                          // 3. (Optional) Force full app restart to ensure no leftover state
-                          await Restart.restartApp(); // Requires restart_app package
+                          await _handleLogout();
                         } else if (item['label'] == 'Timetable') {
                           final selectedChildString = prefs.getString(
                             'selected_child',
@@ -138,9 +135,8 @@ class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => StudentTimeTablePage(
-                                studentId: studentId,
-                              ),
+                              builder: (_) =>
+                                  StudentTimeTablePage(studentId: studentId),
                             ),
                           );
                         } else if (item['label'] == 'Attendance') {
