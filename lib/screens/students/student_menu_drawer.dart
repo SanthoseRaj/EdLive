@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:convert';
 
 import 'package:school_app/config/config.dart';
+import 'package:school_app/screens/login_page.dart';
 import 'package:school_app/services/session_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,13 +50,18 @@ class _StudentMenuDrawerState extends State<StudentMenuDrawer> {
   ];
 
   Future<void> _handleLogout() async {
-    await SessionService.clearStoredSession();
+    final authToken = await SessionService.prepareLogout();
 
     if (!mounted) {
       return;
     }
 
-    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    unawaited(SessionService.notifyServerLogout(authToken));
+
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
   }
 
   @override
