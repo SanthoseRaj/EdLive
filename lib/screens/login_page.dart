@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:school_app/config/config.dart';
+import 'package:school_app/services/user_account_service.dart';
 
 import 'students/student_dashboard.dart';
 
@@ -19,9 +20,17 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final UserAccountService _userAccountService = UserAccountService();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   int? _extractPositiveInt(dynamic value) {
     if (value is int && value > 0) {
@@ -418,6 +427,152 @@ class _LoginPageState extends State<LoginPage> {
     return '${value.substring(0, maxLength).trim()}...';
   }
 
+  Future<void> _showForgotPasswordDialog() async {
+    final pageContext = context;
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController(
+      text: _usernameController.text.trim().contains('@')
+          ? _usernameController.text.trim()
+          : '',
+    );
+    bool isSending = false;
+    String? errorMessage;
+
+    try {
+      await showDialog<void>(
+        context: pageContext,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (dialogBuildContext, setDialogState) {
+            return AlertDialog(
+              title: const Text('Forgot Password'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Enter your registered email address. We will send a temporary password to that email.',
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Registered email',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                      validator: (value) {
+                        final trimmed = value?.trim() ?? '';
+                        if (trimmed.isEmpty) {
+                          return 'Registered email is required.';
+                        }
+                        if (!trimmed.contains('@') || !trimmed.contains('.')) {
+                          return 'Enter a valid email address.';
+                        }
+                        return null;
+                      },
+                    ),
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        errorMessage!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSending
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) {
+                            return;
+                          }
+
+                          setDialogState(() {
+                            isSending = true;
+                            errorMessage = null;
+                          });
+
+                          final email = emailController.text.trim();
+                          final dialogNavigator = Navigator.of(
+                            pageContext,
+                            rootNavigator: true,
+                          );
+
+                          try {
+                            await _userAccountService.sendTemporaryPassword(
+                              email: email,
+                            );
+
+                            if (!mounted) {
+                              return;
+                            }
+
+                            dialogNavigator.pop();
+                            await _showTemporaryPasswordSentDialog(email);
+                          } catch (error) {
+                            setDialogState(() {
+                              isSending = false;
+                              errorMessage = error is UserAccountException
+                                  ? error.message
+                                  : _extractExceptionMessage(error);
+                            });
+                          }
+                        },
+                  child: isSending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Send'),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    } finally {
+      emailController.dispose();
+    }
+  }
+
+  Future<void> _showTemporaryPasswordSentDialog(String email) {
+    final isGmail = email.toLowerCase().contains('@gmail.com');
+    final message = isGmail
+        ? 'A temporary password has been sent to your Gmail account ($email). Please use that temporary password to continue.'
+        : 'A temporary password has been sent to $email. Please use that temporary password to continue.';
+
+    return showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Temporary Password Sent'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showError(String message) {
     showDialog(
       context: context,
@@ -519,7 +674,7 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: _isLoading ? null : _showForgotPasswordDialog,
                     child: const Text('Forgot Password?'),
                   ),
                 ),
